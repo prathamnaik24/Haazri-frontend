@@ -1,9 +1,10 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import Home from '../pages/Home'
-import EmployeeDashboard from '../pages/employee/EmployeeDashboard'
-import AdminDashboard from '../pages/admin/AdminDashboard'
-import KioskView from '../pages/kiosk/KioskView'
+import OrgRegister from '../pages/auth/OrgRegister'
+import OrgLogin from '../pages/auth/OrgLogin'
+import EmployeeLogin from '../pages/auth/EmployeeLogin'
+import Dashboard from '../pages/Dashboard'
 
 export const router = createBrowserRouter([
   {
@@ -11,15 +12,19 @@ export const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: '/employee',
-    element: <EmployeeDashboard />,
+    path: '/register',
+    element: <OrgRegister />,
   },
   {
-    path: '/admin',
-    element: <AdminDashboard />,
+    path: '/login',
+    element: <OrgLogin />,
   },
   {
-    path: '/kiosk',
-    element: <KioskView />,
+    path: '/employee-login',
+    element: <EmployeeLogin />,
+  },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
   },
 ])
