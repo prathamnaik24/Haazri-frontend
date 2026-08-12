@@ -7,7 +7,7 @@ export default function EmployeeDashboard() {
   // Health check placeholder function
   const checkHealth = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/health')
+      const res = await fetch('http://localhost:5001/api/health')
       if (res.ok) {
         const data = await res.json()
         setHealthStatus(`Connected to backend. Status: ${data.status}`)
@@ -15,7 +15,7 @@ export default function EmployeeDashboard() {
         setHealthStatus('Backend returned an error.')
       }
     } catch (e) {
-      setHealthStatus('Could not reach backend. Verify server is running at port 5000.')
+      setHealthStatus('Could not reach backend. Verify server is running at port 5001.')
     }
   }
 
