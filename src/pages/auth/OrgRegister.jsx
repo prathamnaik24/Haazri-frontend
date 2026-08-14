@@ -25,7 +25,7 @@ export default function OrgRegister() {
     try {
       const res = await api.post('/auth/org/register', formData);
       localStorage.setItem('token', res.data.data.tokens.accessToken);
-      navigate('/dashboard');
+      navigate('/app');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     }

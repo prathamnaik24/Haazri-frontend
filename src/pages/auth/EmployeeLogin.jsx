@@ -21,7 +21,7 @@ export default function EmployeeLogin() {
     try {
       const res = await api.post('/auth/employee/login', formData);
       localStorage.setItem('token', res.data.data.tokens.accessToken);
-      navigate('/dashboard');
+      navigate('/app');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     }

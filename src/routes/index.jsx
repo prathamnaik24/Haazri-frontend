@@ -1,30 +1,71 @@
 import React from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+
+// Auth pages
 import Home from '../pages/Home'
 import OrgRegister from '../pages/auth/OrgRegister'
 import OrgLogin from '../pages/auth/OrgLogin'
 import EmployeeLogin from '../pages/auth/EmployeeLogin'
+
+// Employee pages
+import EmployeeDashboard from '../pages/employee/EmployeeDashboard'
+import MyAttendance from '../pages/employee/MyAttendance'
+import MyLeave from '../pages/employee/MyLeave'
+
+// Manager pages
+import ManagerDashboard from '../pages/manager/ManagerDashboard'
+import TeamAttendance from '../pages/manager/TeamAttendance'
+import LeaveApprovals from '../pages/manager/LeaveApprovals'
+
+// Admin pages
+import AdminDashboard from '../pages/admin/AdminDashboard'
+import AdminEmployees from '../pages/admin/AdminEmployees'
+
+// Generic dashboard (legacy — kept for token display)
 import Dashboard from '../pages/Dashboard'
 
+import { getUserRole } from '../utils/auth.js'
+
+// Smart redirect based on role after login
+function AppRedirect() {
+  const role = getUserRole()
+  if (role === 'org_admin') return <Navigate to="/app/dashboard" replace />
+  if (role === 'manager')   return <Navigate to="/app/dashboard" replace />
+  if (role === 'employee')  return <Navigate to="/app/dashboard" replace />
+  return <Navigate to="/" replace />
+}
+
+// Role-based dashboard picker
+function DashboardRouter() {
+  const role = getUserRole()
+  if (role === 'org_admin') return <AdminDashboard />
+  if (role === 'manager')   return <ManagerDashboard />
+  return <EmployeeDashboard />
+}
+
 export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Home />,
-  },
-  {
-    path: '/register',
-    element: <OrgRegister />,
-  },
-  {
-    path: '/login',
-    element: <OrgLogin />,
-  },
-  {
-    path: '/employee-login',
-    element: <EmployeeLogin />,
-  },
-  {
-    path: '/dashboard',
-    element: <Dashboard />,
-  },
+  // ── Public routes ──────────────────────────────────────────────────
+  { path: '/',                element: <Home /> },
+  { path: '/register',        element: <OrgRegister /> },
+  { path: '/login',           element: <OrgLogin /> },
+  { path: '/employee-login',  element: <EmployeeLogin /> },
+  { path: '/dashboard',       element: <Dashboard /> },   // legacy token viewer
+
+  // ── App redirect after login ───────────────────────────────────────
+  { path: '/app',             element: <AppRedirect /> },
+
+  // ── Protected app routes ───────────────────────────────────────────
+  { path: '/app/dashboard',       element: <DashboardRouter /> },
+  { path: '/app/attendance',      element: <MyAttendance /> },
+  { path: '/app/leave',           element: <MyLeave /> },
+
+  // Manager
+  { path: '/app/team-attendance', element: <TeamAttendance /> },
+  { path: '/app/leave-approvals', element: <LeaveApprovals /> },
+
+  // Admin
+  { path: '/app/employees',       element: <AdminEmployees /> },
+
+  // Catch-all
+  { path: '*', element: <Navigate to="/" replace /> },
 ])

@@ -1,89 +1,172 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import AppShell from '../../components/layout/AppShell.jsx'
+import { Badge } from '../../components/ui/Badge.jsx'
+import { card, cardTitle } from '../../components/ui/styles.js'
+import { CalendarIcon } from '../../components/ui/Icons.jsx'
+import api from '../../services/api.js'
+import { getUserFromToken } from '../../utils/auth.js'
 
-export default function EmployeeDashboard() {
-  const [healthStatus, setHealthStatus] = useState('Checking connection to backend...')
-  
-  // Health check placeholder function
-  const checkHealth = async () => {
-    try {
-      const res = await fetch('http://localhost:5001/api/health')
-      if (res.ok) {
-        const data = await res.json()
-        setHealthStatus(`Connected to backend. Status: ${data.status}`)
-      } else {
-        setHealthStatus('Backend returned an error.')
+const mockAttendance = [
+  { date: '2026-08-13', checkIn: '09:02 AM', checkOut: '06:15 PM', hours: '9h 13m', status: 'Present' },
+  { date: '2026-08-12', checkIn: '09:18 AM', checkOut: '06:30 PM', hours: '9h 12m', status: 'Present' },
+  { date: '2026-08-11', checkIn: '—', checkOut: '—', hours: '—', status: 'On Leave' },
+  { date: '2026-08-08', checkIn: '08:55 AM', checkOut: '06:10 PM', hours: '9h 15m', status: 'Present' },
+]
+
+function CheckInWidget({ user }) {
+  const [checkedIn, setCheckedIn] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [time, setTime] = useState('')
+  const [elapsed, setElapsed] = useState('00:00:00')
+  const [startTime, setStartTime] = useState(null)
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date()
+      setTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+      if (startTime) {
+        const diff = Math.floor((now - startTime) / 1000)
+        const h = String(Math.floor(diff / 3600)).padStart(2, '0')
+        const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0')
+        const s = String(diff % 60).padStart(2, '0')
+        setElapsed(`${h}:${m}:${s}`)
       }
-    } catch (e) {
-      setHealthStatus('Could not reach backend. Verify server is running at port 5001.')
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [startTime])
+
+  const handleCheckIn = async () => {
+    setLoading(true)
+    try {
+      await api.post('/attendance/check-in', {})
+      setCheckedIn(true)
+      setStartTime(new Date())
+    } catch {
+      setCheckedIn(true)
+      setStartTime(new Date())
+    } finally {
+      setLoading(false)
     }
   }
 
+  const handleCheckOut = async () => {
+    setLoading(true)
+    try {
+      await api.post('/attendance/check-out', {})
+      setCheckedIn(false)
+      setStartTime(null)
+      setElapsed('00:00:00')
+    } catch {
+      setCheckedIn(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const now = new Date()
+  const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'
+  const firstName = user?.first_name || 'there'
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-900 text-white max-w-md mx-auto border-x border-slate-800 shadow-2xl">
-      <header className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80 backdrop-blur sticky top-0">
-        <Link to="/" className="text-slate-400 hover:text-white">&larr; Back</Link>
-        <span className="font-bold text-brand-accent">Employee Portal</span>
-        <div className="w-8 h-8 rounded-full bg-brand-mid flex items-center justify-center font-bold text-xs">JD</div>
-      </header>
-
-      <main className="flex-grow p-6 space-y-6 overflow-y-auto">
-        <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-bold">John Doe</h2>
-              <p className="text-xs text-slate-400">Software Engineer (EMP-10023)</p>
-            </div>
-            <span className="px-2 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-semibold">Active</span>
+    <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: 0 }}>{greeting}, {firstName} 👋</h2>
+        <p style={{ fontSize: 13, color: '#9ca3af', margin: '4px 0 0' }}>
+          {now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+      </div>
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontSize: 48, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em' }}>{time}</div>
+        {checkedIn && (
+          <div style={{ fontSize: 14, color: '#6b7280', marginTop: 8 }}>
+            Working time: <span style={{ fontWeight: 600, color: '#2563eb' }}>{elapsed}</span>
           </div>
-          
-          <div className="border-t border-slate-700 pt-4 flex justify-between text-sm">
-            <div>
-              <p className="text-slate-400 text-xs">Office Base</p>
-              <p className="font-semibold">Mumbai HQ</p>
-            </div>
-            <div className="text-right">
-              <p className="text-slate-400 text-xs">Today's Shift</p>
-              <p className="font-semibold text-brand-accent">General (09:00 - 18:00)</p>
-            </div>
-          </div>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: checkedIn ? '#22c55e' : '#9ca3af' }} />
+          <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>
+            {checkedIn ? 'Checked In' : 'Not checked in'}
+          </span>
         </div>
-
-        {/* Action Button Placeholder */}
-        <div className="space-y-3">
-          <button className="w-full bg-brand-accent text-slate-900 hover:bg-opacity-90 font-bold py-4 px-4 rounded-xl shadow-lg shadow-brand-accent/20 transition duration-150 flex items-center justify-center space-x-2">
-            <span className="text-lg">📷</span>
-            <span>Scan Office QR Code</span>
-          </button>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <button className="bg-slate-800 hover:bg-slate-750 border border-slate-700 py-3 rounded-xl text-sm font-semibold">
-              ☕ Start Break
-            </button>
-            <button className="bg-slate-800 hover:bg-slate-750 border border-slate-700 py-3 rounded-xl text-sm font-semibold">
-              🚩 Manual Check-in
-            </button>
-          </div>
-        </div>
-
-        {/* Backend Stack Status block */}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-800 space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">System Integration Status</h3>
-          <p className="text-xs text-slate-300 font-mono bg-slate-950 p-3 rounded-lg border border-slate-850">
-            {healthStatus}
-          </p>
-          <button 
-            onClick={checkHealth}
-            className="text-xs text-brand-accent hover:underline font-semibold"
-          >
-            Test backend endpoint connection
-          </button>
-        </div>
-      </main>
-
-      <footer className="p-4 border-t border-slate-800 bg-slate-900 text-center text-xs text-slate-500">
-        Attendance System v0.1.0 • PWA Mobile Wrapper Shell
-      </footer>
+        <button
+          disabled={loading}
+          onClick={checkedIn ? handleCheckOut : handleCheckIn}
+          style={{
+            padding: '10px 28px', borderRadius: 8, border: 'none',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            background: checkedIn ? '#fee2e2' : '#2563eb',
+            color: checkedIn ? '#dc2626' : '#fff',
+            fontSize: 14, fontWeight: 600,
+          }}
+        >
+          {loading ? '...' : checkedIn ? 'Check Out' : 'Check In'}
+        </button>
+      </div>
     </div>
+  )
+}
+
+export default function EmployeeDashboard() {
+  const user = getUserFromToken()
+
+  return (
+    <AppShell>
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <CheckInWidget user={user} />
+          <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={cardTitle}>Leave Balance</h2>
+            {[
+              { type: 'Annual Leave', used: 2, total: 10, color: '#2563eb', bg: '#dbeafe' },
+              { type: 'Sick Leave', used: 1, total: 7, color: '#22c55e', bg: '#d1fae5' },
+              { type: 'Casual Leave', used: 0, total: 5, color: '#f59e0b', bg: '#fef3c7' },
+            ].map(leave => (
+              <div key={leave.type}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151', fontWeight: 500, marginBottom: 6 }}>
+                  <span>{leave.type}</span>
+                  <span style={{ color: '#6b7280' }}>{leave.total - leave.used} of {leave.total} days left</span>
+                </div>
+                <div style={{ height: 8, borderRadius: 8, background: leave.bg, overflow: 'hidden' }}>
+                  <div style={{ width: `${(leave.used / leave.total) * 100}%`, height: '100%', background: leave.color, borderRadius: 8 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={card}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <h2 style={cardTitle}>Recent Attendance</h2>
+            <span style={{ fontSize: 12, color: '#9ca3af', display: 'flex', alignItems: 'center' }}>
+              <CalendarIcon />Last 7 days
+            </span>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#f9fafb' }}>
+                {['Date', 'Check In', 'Check Out', 'Total Hours', 'Status'].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#374151', borderBottom: '1px solid #f3f4f6' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {mockAttendance.map((row, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #f9fafb' }}>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#374151', fontWeight: 500 }}>{row.date}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#22c55e', fontWeight: 500 }}>{row.checkIn}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#ef4444', fontWeight: 500 }}>{row.checkOut}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#374151', fontWeight: 600 }}>{row.hours}</td>
+                  <td style={{ padding: '12px 16px' }}><Badge status={row.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </AppShell>
   )
 }

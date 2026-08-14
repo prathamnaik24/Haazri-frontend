@@ -1,120 +1,172 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import AppShell from '../../components/layout/AppShell.jsx'
+import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
+import { card, cardTitle, dateBadge } from '../../components/ui/styles.js'
+import { CalendarIcon } from '../../components/ui/Icons.jsx'
+
+const attendanceData = [
+  { day: 'Mon', present: 38, absent: 4 },
+  { day: 'Tue', present: 40, absent: 2 },
+  { day: 'Wed', present: 36, absent: 5 },
+  { day: 'Thu', present: 39, absent: 3 },
+  { day: 'Fri', present: 35, absent: 6 },
+  { day: 'Sat', present: 20, absent: 2 },
+  { day: 'Sun', present: 5,  absent: 0 },
+]
+
+const staffData = [
+  { name: 'Managers',  value: 8,  color: '#6d28d9' },
+  { name: 'Employees', value: 35, color: '#2563eb' },
+  { name: 'HR',        value: 4,  color: '#f59e0b' },
+]
+
+const recentActivity = [
+  { name: 'Aisha Khan',   action: 'Checked In',    time: '5 min ago' },
+  { name: 'Rohan Mehta',  action: 'Checked In',    time: '12 min ago' },
+  { name: 'Sara Ahmed',   action: 'Leave Approved', time: '18 min ago' },
+  { name: 'James Wilson', action: 'Checked Out',   time: '1 hr ago' },
+  { name: 'Priya Singh',  action: 'Checked In',    time: '2 hr ago' },
+]
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', fontSize: 13 }}>
+        <div style={{ fontWeight: 600, color: '#111827', marginBottom: 6 }}>{label}</div>
+        {payload.map((p, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill, display: 'inline-block' }} />
+            <span style={{ color: '#6b7280' }}>{p.name === 'present' ? 'Present' : 'Absent'}</span>
+            <span style={{ fontWeight: 600, marginLeft: 4 }}>{p.value}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
 
 export default function AdminDashboard() {
+  const [attendanceTab, setAttendanceTab] = useState('Weekly')
+  const total = staffData.reduce((s, d) => s + d.value, 0)
+
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <Link to="/" className="font-bold text-lg text-brand-accent">HR Admin Portal</Link>
+    <AppShell>
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        {/* Summary stat cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          {[
+            { label: 'Total Employees', value: '47',  delta: '+2 this month', color: '#2563eb', bg: '#dbeafe' },
+            { label: 'Present Today',   value: '39',  delta: '83% attendance', color: '#22c55e', bg: '#d1fae5' },
+            { label: 'On Leave',        value: '5',   delta: '3 approved today', color: '#f59e0b', bg: '#fef3c7' },
+            { label: 'Pending Actions', value: '3',   delta: 'Leave requests', color: '#ef4444', bg: '#fee2e2' },
+          ].map(s => (
+            <div key={s.label} style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: s.color }}>✦</span>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#6b7280' }}>{s.label}</span>
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em', marginBottom: 4 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 500 }}>▲ {s.delta}</div>
+            </div>
+          ))}
         </div>
-        
-        <nav className="flex-grow p-4 space-y-1">
-          <a href="#" className="flex items-center px-4 py-2.5 bg-slate-800 text-brand-accent font-semibold rounded-lg text-sm">
-            <span className="mr-3">📊</span> Dashboard
-          </a>
-          <a href="#" className="flex items-center px-4 py-2.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg text-sm transition">
-            <span className="mr-3">👥</span> Employees
-          </a>
-          <a href="#" className="flex items-center px-4 py-2.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg text-sm transition">
-            <span className="mr-3">⚠️</span> Anomaly Queue
-            <span className="ml-auto px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full">3</span>
-          </a>
-          <a href="#" className="flex items-center px-4 py-2.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg text-sm transition">
-            <span className="mr-3">📜</span> Audit Logs
-          </a>
-          <a href="#" className="flex items-center px-4 py-2.5 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg text-sm transition">
-            <span className="mr-3">⚙️</span> Settings
-          </a>
-        </nav>
 
-        <div className="p-4 border-t border-slate-800 text-xs text-slate-500">
-          Logged in as: Admin <br />
-          Company: Acme Corp
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          {/* Staff Overview Donut */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <h2 style={cardTitle}>Staff Overview</h2>
+              <span style={dateBadge}><CalendarIcon />Last 7 days</span>
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 4 }}>
+              {staffData.map(d => (
+                <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#374151' }}>
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: d.color, display: 'inline-block' }} />
+                  <span style={{ color: '#6b7280' }}>{d.name}</span>
+                  <span style={{ fontWeight: 600 }}>{d.value}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ position: 'relative', height: 200 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={staffData} cx="50%" cy="80%" startAngle={180} endAngle={0}
+                    innerRadius={90} outerRadius={135} paddingAngle={3} dataKey="value" labelLine={false}>
+                    {staffData.map((entry, index) => <Cell key={index} fill={entry.color} strokeWidth={0} />)}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em' }}>{total}</div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Total Staff</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h2 style={cardTitle}>Recent Activity</h2>
+              <button style={{ fontSize: 13, color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>View more</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {recentActivity.map((a, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Avatar name={a.name} size={36} bgColor={avatarColor(i)} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.3 }}>{a.action}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap' }}>{a.time}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-grow flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-16 border-b border-slate-800 bg-slate-900 px-8 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <h2 className="font-semibold text-lg">Acme Corp Dashboard</h2>
-          </div>
-          <Link to="/" className="text-sm text-slate-400 hover:text-white">&larr; Main Menu</Link>
-        </header>
-
-        {/* Workspace content scroll container */}
-        <main className="flex-grow p-8 overflow-y-auto space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <p className="text-slate-400 text-sm">Present Today</p>
-              <h3 className="text-3xl font-bold mt-1 text-green-400">42 / 48</h3>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <p className="text-slate-400 text-sm">Late Checks</p>
-              <h3 className="text-3xl font-bold mt-1 text-amber-400">5</h3>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <p className="text-slate-400 text-sm">Unresolved Anomalies</p>
-              <h3 className="text-3xl font-bold mt-1 text-red-400">3</h3>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <p className="text-slate-400 text-sm">Current Active Kiosks</p>
-              <h3 className="text-3xl font-bold mt-1 text-brand-accent">2</h3>
+        {/* Attendance Overview Chart */}
+        <div style={card}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <h2 style={cardTitle}>Attendance Overview</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />Absent
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />Present
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {(['Weekly', 'Monthly']).map(t => (
+                  <button key={t} onClick={() => setAttendanceTab(t)} style={{
+                    padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
+                    background: attendanceTab === t ? '#2563eb' : '#f3f4f6',
+                    color: attendanceTab === t ? '#fff' : '#6b7280',
+                    fontWeight: attendanceTab === t ? 600 : 400,
+                  }}>{t}</button>
+                ))}
+              </div>
             </div>
           </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={attendanceData} barCategoryGap="30%" barGap={2}>
+              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+              <Bar dataKey="present" fill="#22c55e" radius={[6, 6, 6, 6]} name="present" />
+              <Bar dataKey="absent" fill="#ef4444" radius={[6, 6, 6, 6]} name="absent" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
-          {/* Table Placeholder */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-            <div className="p-5 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="font-semibold">Recent Activity</h3>
-              <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded border border-slate-700">
-                Refresh list
-              </button>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-950 text-slate-400 text-xs uppercase border-b border-slate-800">
-                  <tr>
-                    <th className="p-4">Employee</th>
-                    <th className="p-4">Event</th>
-                    <th className="p-4">Time</th>
-                    <th className="p-4">Verification</th>
-                    <th className="p-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/50">
-                  <tr>
-                    <td className="p-4 font-semibold text-white">Alice Smith</td>
-                    <td className="p-4">check_in</td>
-                    <td className="p-4 font-mono">08:54:12</td>
-                    <td className="p-4">QR + GPS</td>
-                    <td className="p-4"><span className="px-2 py-0.5 bg-green-500/10 text-green-400 rounded-full text-xs font-medium border border-green-500/20">Verified</span></td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-semibold text-white">Bob Johnson</td>
-                    <td className="p-4">check_in</td>
-                    <td className="p-4 font-mono">09:12:05</td>
-                    <td className="p-4">QR + GPS</td>
-                    <td className="p-4"><span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full text-xs font-medium border border-amber-500/20">Late (Grace)</span></td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-semibold text-white">Charlie Brown</td>
-                    <td className="p-4">check_in</td>
-                    <td className="p-4 font-mono">09:15:30</td>
-                    <td className="p-4">GPS Mismatch</td>
-                    <td className="p-4"><span className="px-2 py-0.5 bg-red-500/10 text-red-400 rounded-full text-xs font-medium border border-red-500/20">Anomaly Flagged</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </main>
       </div>
-    </div>
+    </AppShell>
   )
 }
