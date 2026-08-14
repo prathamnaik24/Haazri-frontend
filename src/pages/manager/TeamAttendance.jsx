@@ -31,7 +31,7 @@ export default function TeamAttendance() {
 
           {/* Header */}
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0, flex: 1 }}>Team Attendance</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 700, color: '#172B3A', margin: 0, flex: 1 }}>Team Attendance</h1>
 
             {/* Date selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#6b7280' }}>
@@ -78,7 +78,7 @@ export default function TeamAttendance() {
                   <td style={{ padding: '14px 20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <Avatar name={emp.name} size={32} bgColor={avatarColor(i)} />
-                      <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>{emp.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: '#172B3A' }}>{emp.name}</span>
                     </div>
                   </td>
                   <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.position}</td>

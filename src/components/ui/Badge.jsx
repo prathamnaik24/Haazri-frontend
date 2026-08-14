@@ -1,15 +1,23 @@
 // Status badge component
 const configs = {
-  Active:    { bg: '#d1fae5', color: '#15803d' },
-  Inactive:  { bg: '#fee2e2', color: '#dc2626' },
-  Present:   { bg: '#d1fae5', color: '#15803d' },
-  Absent:    { bg: '#fee2e2', color: '#dc2626' },
-  'On Leave':{ bg: '#fef3c7', color: '#92400e' },
-  Pending:   { bg: '#fef3c7', color: '#92400e' },
-  Approved:  { bg: '#d1fae5', color: '#15803d' },
-  Rejected:  { bg: '#fee2e2', color: '#dc2626' },
-  'Checked In':  { bg: '#dbeafe', color: '#1d4ed8' },
-  'Checked Out': { bg: '#f3f4f6', color: '#374151' },
+  // Success
+  Active:       { bg: '#DCFCE7', color: '#166534' },
+  Present:      { bg: '#DCFCE7', color: '#166534' },
+  Approved:     { bg: '#DCFCE7', color: '#166534' },
+  'Checked In': { bg: '#DCFCE7', color: '#166534' },
+  // Pending
+  Pending:      { bg: '#FEF3C7', color: '#92400E' },
+  Late:         { bg: '#FEF3C7', color: '#92400E' },
+  // Danger
+  Inactive:     { bg: '#FEE2E2', color: '#991B1B' },
+  Absent:       { bg: '#FEE2E2', color: '#991B1B' },
+  Rejected:     { bg: '#FEE2E2', color: '#991B1B' },
+  Error:        { bg: '#FEE2E2', color: '#991B1B' },
+  // Informational
+  'On Leave':   { bg: '#E0F2FE', color: '#075985' },
+  // Neutral
+  'Checked Out':{ bg: '#EDF3F6', color: '#526B7A' },
+  Draft:        { bg: '#EDF3F6', color: '#526B7A' },
 }
 
 export function Badge({ status }) {

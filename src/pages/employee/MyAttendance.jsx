@@ -31,7 +31,7 @@ export default function MyAttendance() {
   return (
     <AppShell>
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>My Attendance</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#172B3A', margin: 0 }}>My Attendance</h1>
 
         {/* Summary cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>

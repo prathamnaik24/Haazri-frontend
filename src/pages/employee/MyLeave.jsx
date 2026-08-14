@@ -5,7 +5,7 @@ import { card, cardTitle, formLabel, formInput } from '../../components/ui/style
 import api from '../../services/api.js'
 
 const leaveBalances = [
-  { type: 'Annual Leave', used: 2, total: 10, color: '#2563eb', bg: '#dbeafe' },
+  { type: 'Annual Leave', used: 2, total: 10, color: '#57B9FF', bg: '#EAF6FF' },
   { type: 'Sick Leave',   used: 1, total: 7,  color: '#22c55e', bg: '#d1fae5' },
   { type: 'Casual Leave', used: 0, total: 5,  color: '#f59e0b', bg: '#fef3c7' },
 ]
@@ -50,9 +50,9 @@ export default function MyLeave() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>My Leave</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#172B3A', margin: 0 }}>My Leave</h1>
           <button onClick={() => setShowForm(true)}
-            style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            style={{ background: '#57B9FF', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             + Request Leave
           </button>
         </div>
@@ -68,7 +68,7 @@ export default function MyLeave() {
           {leaveBalances.map(lb => (
             <div key={lb.type} style={card}>
               <div style={{ fontSize: 13, fontWeight: 500, color: '#6b7280', marginBottom: 12 }}>{lb.type}</div>
-              <div style={{ fontSize: 32, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em', marginBottom: 8 }}>
+              <div style={{ fontSize: 32, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em', marginBottom: 8 }}>
                 {lb.total - lb.used}
                 <span style={{ fontSize: 14, fontWeight: 500, color: '#9ca3af' }}> / {lb.total}</span>
               </div>
@@ -119,7 +119,7 @@ export default function MyLeave() {
             onClick={e => { if (e.target === e.currentTarget) setShowForm(false) }}
           >
             <div style={{ background: '#fff', borderRadius: 16, width: 560, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
-              <div style={{ background: '#2563eb', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ background: '#57B9FF', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h2 style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0 }}>Request Leave</h2>
                 <button onClick={() => setShowForm(false)}
                   style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', color: '#fff', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -164,7 +164,7 @@ export default function MyLeave() {
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting}
-                    style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                    style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#57B9FF', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
                     {submitting ? 'Submitting...' : 'Submit Request'}
                   </button>
                 </div>

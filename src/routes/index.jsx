@@ -21,6 +21,10 @@ import LeaveApprovals from '../pages/manager/LeaveApprovals'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEmployees from '../pages/admin/AdminEmployees'
 
+// Shared pages
+import Profile from '../pages/Profile'
+import AcceptInvite from '../pages/auth/AcceptInvite'
+
 // Generic dashboard (legacy — kept for token display)
 import Dashboard from '../pages/Dashboard'
 
@@ -65,6 +69,10 @@ export const router = createBrowserRouter([
 
   // Admin
   { path: '/app/employees',       element: <AdminEmployees /> },
+
+  // Shared
+  { path: '/app/profile',         element: <Profile /> },
+  { path: '/invite',              element: <AcceptInvite /> },
 
   // Catch-all
   { path: '*', element: <Navigate to="/" replace /> },

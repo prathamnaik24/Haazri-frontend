@@ -36,7 +36,7 @@ export default function LeaveApprovals() {
     <AppShell>
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Leave Approvals</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#172B3A', margin: 0 }}>Leave Approvals</h1>
           <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 13, fontWeight: 600, padding: '4px 14px', borderRadius: 20 }}>
             {requests.length} pending
           </span>
@@ -65,7 +65,7 @@ export default function LeaveApprovals() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <Avatar name={req.name} size={42} bgColor={avatarColor(i)} />
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{req.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#172B3A' }}>{req.name}</div>
                       <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 2 }}>{req.type}</div>
                     </div>
                   </div>

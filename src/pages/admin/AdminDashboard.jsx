@@ -16,9 +16,9 @@ const attendanceData = [
 ]
 
 const staffData = [
-  { name: 'Managers',  value: 8,  color: '#6d28d9' },
-  { name: 'Employees', value: 35, color: '#2563eb' },
-  { name: 'HR',        value: 4,  color: '#f59e0b' },
+  { name: 'Managers',  value: 8,  color: '#517891' },
+  { name: 'Employees', value: 35, color: '#1677B8' },
+  { name: 'HR',        value: 4,  color: '#57B9FF' },
 ]
 
 const recentActivity = [
@@ -33,11 +33,11 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', fontSize: 13 }}>
-        <div style={{ fontWeight: 600, color: '#111827', marginBottom: 6 }}>{label}</div>
+        <div style={{ fontWeight: 600, color: '#172B3A', marginBottom: 6 }}>{label}</div>
         {payload.map((p, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#334E5C' }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill, display: 'inline-block' }} />
-            <span style={{ color: '#6b7280' }}>{p.name === 'present' ? 'Present' : 'Absent'}</span>
+            <span style={{ color: '#526B7A' }}>{p.name === 'present' ? 'Present' : 'Absent'}</span>
             <span style={{ fontWeight: 600, marginLeft: 4 }}>{p.value}</span>
           </div>
         ))}
@@ -58,20 +58,20 @@ export default function AdminDashboard() {
         {/* Summary stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
           {[
-            { label: 'Total Employees', value: '47',  delta: '+2 this month', color: '#2563eb', bg: '#dbeafe' },
-            { label: 'Present Today',   value: '39',  delta: '83% attendance', color: '#22c55e', bg: '#d1fae5' },
-            { label: 'On Leave',        value: '5',   delta: '3 approved today', color: '#f59e0b', bg: '#fef3c7' },
-            { label: 'Pending Actions', value: '3',   delta: 'Leave requests', color: '#ef4444', bg: '#fee2e2' },
+            { label: 'Total Employees', value: '47',  delta: '+2 this month', color: '#1677B8', bg: '#EAF6FF', deltaColor: '#166534' },
+            { label: 'Present Today',   value: '39',  delta: '83% attendance', color: '#1677B8', bg: '#EAF6FF', deltaColor: '#166534' },
+            { label: 'On Leave',        value: '5',   delta: '3 approved today', color: '#1677B8', bg: '#EAF6FF', deltaColor: '#075985' },
+            { label: 'Pending Actions', value: '3',   delta: 'Leave requests', color: '#1677B8', bg: '#EAF6FF', deltaColor: '#92400E' },
           ].map(s => (
             <div key={s.label} style={card}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: s.color }}>✦</span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#6b7280' }}>{s.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#526B7A' }}>{s.label}</span>
               </div>
-              <div style={{ fontSize: 30, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em', marginBottom: 4 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 500 }}>▲ {s.delta}</div>
+              <div style={{ fontSize: 30, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em', marginBottom: 4 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: s.deltaColor, fontWeight: 500 }}>{s.delta}</div>
             </div>
           ))}
         </div>
@@ -85,9 +85,9 @@ export default function AdminDashboard() {
             </div>
             <div style={{ display: 'flex', gap: 16, marginBottom: 4 }}>
               {staffData.map(d => (
-                <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#374151' }}>
+                <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#172B3A' }}>
                   <span style={{ width: 9, height: 9, borderRadius: '50%', background: d.color, display: 'inline-block' }} />
-                  <span style={{ color: '#6b7280' }}>{d.name}</span>
+                  <span style={{ color: '#526B7A' }}>{d.name}</span>
                   <span style={{ fontWeight: 600 }}>{d.value}</span>
                 </div>
               ))}
@@ -102,8 +102,8 @@ export default function AdminDashboard() {
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em' }}>{total}</div>
-                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Total Staff</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em' }}>{total}</div>
+                <div style={{ fontSize: 12, color: '#526B7A', marginTop: 2 }}>Total Staff</div>
               </div>
             </div>
           </div>
@@ -112,17 +112,17 @@ export default function AdminDashboard() {
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <h2 style={cardTitle}>Recent Activity</h2>
-              <button style={{ fontSize: 13, color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>View more</button>
+              <button style={{ fontSize: 13, color: '#1677B8', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>View more</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {recentActivity.map((a, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <Avatar name={a.name} size={36} bgColor={avatarColor(i)} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{a.name}</div>
-                    <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.3 }}>{a.action}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#172B3A', lineHeight: 1.3 }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: '#526B7A', lineHeight: 1.3 }}>{a.action}</div>
                   </div>
-                  <div style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap' }}>{a.time}</div>
+                  <div style={{ fontSize: 12, color: '#8AA0AD', whiteSpace: 'nowrap' }}>{a.time}</div>
                 </div>
               ))}
             </div>
@@ -135,19 +135,19 @@ export default function AdminDashboard() {
             <h2 style={cardTitle}>Attendance Overview</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />Absent
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#526B7A' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#57B9FF', display: 'inline-block' }} />Absent
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />Present
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#526B7A' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#1677B8', display: 'inline-block' }} />Present
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 4 }}>
                 {(['Weekly', 'Monthly']).map(t => (
                   <button key={t} onClick={() => setAttendanceTab(t)} style={{
                     padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
-                    background: attendanceTab === t ? '#2563eb' : '#f3f4f6',
-                    color: attendanceTab === t ? '#fff' : '#6b7280',
+                    background: attendanceTab === t ? '#1677B8' : '#EDF3F6',
+                    color: attendanceTab === t ? '#FFFFFF' : '#526B7A',
                     fontWeight: attendanceTab === t ? 600 : 400,
                   }}>{t}</button>
                 ))}
@@ -156,12 +156,12 @@ export default function AdminDashboard() {
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={attendanceData} barCategoryGap="30%" barGap={2}>
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
-              <Bar dataKey="present" fill="#22c55e" radius={[6, 6, 6, 6]} name="present" />
-              <Bar dataKey="absent" fill="#ef4444" radius={[6, 6, 6, 6]} name="absent" />
+              <CartesianGrid vertical={false} stroke="#D7E6EF" />
+              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#526B7A' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#526B7A' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(81,120,145,0.05)' }} />
+              <Bar dataKey="present" fill="#1677B8" radius={[6, 6, 6, 6]} name="present" />
+              <Bar dataKey="absent" fill="#57B9FF" radius={[6, 6, 6, 6]} name="absent" />
             </BarChart>
           </ResponsiveContainer>
         </div>

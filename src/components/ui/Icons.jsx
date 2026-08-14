@@ -154,15 +154,13 @@ export function BackIcon({ size = 18, color = '#374151' }) {
   )
 }
 
-export function BurraaLogo() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-      <rect width="30" height="30" rx="8" fill="#2563eb" />
-      <path d="M8 15 L15 8 L22 15 L15 12 Z" fill="white" opacity="0.9" />
-      <path d="M8 15 L15 22 L22 15 L15 18 Z" fill="white" opacity="0.6" />
-    </svg>
-  )
-}
+export const BurraaLogo = ({ size = 30 }) => (
+  <svg width={size} height={size} viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="30" height="30" rx="8" fill="#1677B8" />
+    <path d="M8 15 L15 8 L22 15 L15 12 Z" fill="white" opacity="0.9" />
+    <path d="M8 15 L15 22 L22 15 L15 18 Z" fill="white" opacity="0.6" />
+  </svg>
+)
 
 export function UserAvatarSvg() {
   return (

@@ -72,22 +72,22 @@ function CheckInWidget({ user }) {
   return (
     <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: 0 }}>{greeting}, {firstName} 👋</h2>
-        <p style={{ fontSize: 13, color: '#9ca3af', margin: '4px 0 0' }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: '#172B3A', margin: 0 }}>{greeting}, {firstName} 👋</h2>
+        <p style={{ fontSize: 13, color: '#526B7A', margin: '4px 0 0' }}>
           {now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
       </div>
       <div style={{ textAlign: 'center', padding: '20px 0' }}>
-        <div style={{ fontSize: 48, fontWeight: 700, color: '#111827', letterSpacing: '-0.03em' }}>{time}</div>
+        <div style={{ fontSize: 48, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em' }}>{time}</div>
         {checkedIn && (
           <div style={{ fontSize: 14, color: '#6b7280', marginTop: 8 }}>
-            Working time: <span style={{ fontWeight: 600, color: '#2563eb' }}>{elapsed}</span>
+            Working time: <span style={{ fontWeight: 600, color: '#1677B8' }}>{elapsed}</span>
           </div>
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: checkedIn ? '#22c55e' : '#9ca3af' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: checkedIn ? '#22c55e' : '#526B7A' }} />
           <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>
             {checkedIn ? 'Checked In' : 'Not checked in'}
           </span>
@@ -98,8 +98,8 @@ function CheckInWidget({ user }) {
           style={{
             padding: '10px 28px', borderRadius: 8, border: 'none',
             cursor: loading ? 'not-allowed' : 'pointer',
-            background: checkedIn ? '#fee2e2' : '#2563eb',
-            color: checkedIn ? '#dc2626' : '#fff',
+            background: checkedIn ? '#FEE2E2' : '#1677B8',
+            color: checkedIn ? '#dc2626' : '#EAF6FF',
             fontSize: 14, fontWeight: 600,
           }}
         >
@@ -121,7 +121,7 @@ export default function EmployeeDashboard() {
           <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 style={cardTitle}>Leave Balance</h2>
             {[
-              { type: 'Annual Leave', used: 2, total: 10, color: '#2563eb', bg: '#dbeafe' },
+              { type: 'Annual Leave', used: 2, total: 10, color: '#1677B8', bg: '#EAF6FF' },
               { type: 'Sick Leave', used: 1, total: 7, color: '#22c55e', bg: '#d1fae5' },
               { type: 'Casual Leave', used: 0, total: 5, color: '#f59e0b', bg: '#fef3c7' },
             ].map(leave => (
@@ -141,7 +141,7 @@ export default function EmployeeDashboard() {
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <h2 style={cardTitle}>Recent Attendance</h2>
-            <span style={{ fontSize: 12, color: '#9ca3af', display: 'flex', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: '#526B7A', display: 'flex', alignItems: 'center' }}>
               <CalendarIcon />Last 7 days
             </span>
           </div>
