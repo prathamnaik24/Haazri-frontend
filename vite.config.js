@@ -9,10 +9,5 @@ export default defineConfig({
     port: 5173,
     host: true
   },
-  resolve: {
-    alias: {
-      // Force Vite to use recharts CJS bundle to avoid ES6 subpath export issues
-      'recharts': path.resolve('./node_modules/recharts/lib/index.js'),
-    }
-  }
+
 })

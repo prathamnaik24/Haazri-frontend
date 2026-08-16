@@ -76,4 +76,15 @@ export const router = createBrowserRouter([
 
   // Catch-all
   { path: '*', element: <Navigate to="/" replace /> },
+
+  // ── TEMPORARY UI PREVIEW ROUTES (NO LOGIN REQUIRED) ────────────────
+  { path: '/ui/admin',            element: <AdminDashboard /> },
+  { path: '/ui/manager',          element: <ManagerDashboard /> },
+  { path: '/ui/employee',         element: <EmployeeDashboard /> },
+  { path: '/ui/admin-employees',  element: <AdminEmployees /> },
+  { path: '/ui/leave-approvals',  element: <LeaveApprovals /> },
+  { path: '/ui/team-attendance',  element: <TeamAttendance /> },
+  { path: '/ui/my-attendance',    element: <MyAttendance /> },
+  { path: '/ui/my-leave',         element: <MyLeave /> },
+  { path: '/ui/profile',          element: <Profile /> },
 ])

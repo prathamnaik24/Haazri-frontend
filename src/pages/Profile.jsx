@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import AppShell from '../../components/layout/AppShell.jsx'
-import { card, cardTitle, formLabel, formInput, primaryBtn } from '../../components/ui/styles.js'
-import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
-import api from '../../services/api.js'
-import { getUserFromToken } from '../../utils/auth.js'
+import AppShell from '../components/layout/AppShell.jsx'
+import { card, cardTitle, formLabel, formInput, primaryBtn } from '../components/ui/styles.js'
+import { Avatar, avatarColor } from '../components/ui/Avatar.jsx'
+import api from '../services/api.js'
+import { getUserFromToken } from '../utils/auth.js'
 
 export default function Profile() {
   const tokenUser = getUserFromToken()
