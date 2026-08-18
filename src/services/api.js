@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Hardcoded to 5002 to bypass the outdated Docker container on 5000
-  baseURL: 'http://localhost:5002/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api',
 });
 
 // Request interceptor to attach JWT token
