@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AppShell from '../../components/layout/AppShell.jsx'
 import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
@@ -17,7 +17,8 @@ const mockEmployees = [
 const depts = ['All', 'Engineering', 'Human Resources', 'Finance']
 
 export default function AdminEmployees() {
-  const [employees, setEmployees] = useState(mockEmployees)
+  const [employees, setEmployees] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [deptFilter, setDeptFilter] = useState('All')
   const [showModal, setShowModal] = useState(false)
@@ -27,6 +28,32 @@ export default function AdminEmployees() {
   const [form, setForm] = useState({
     first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '',
   })
+
+  const fetchEmployees = () => {
+    api.get('/org/employees')
+      .then(res => {
+        const formatted = res.data.data.employees.map(emp => ({
+          id: emp.id,
+          name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim(),
+          email: emp.email,
+          dept: emp.department || 'General',
+          position: emp.primary_position ? emp.primary_position.title : 'No Position',
+          role: emp.role || 'Employee',
+          status: emp.is_active ? 'Active' : 'Inactive',
+          employee_id: emp.employee_id || '—'
+        }))
+        setEmployees(formatted)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Failed to fetch employees:', err)
+        setLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
 
   const filtered = employees.filter(emp => {
     const matchSearch = emp.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -44,6 +71,7 @@ export default function AdminEmployees() {
       setInviteSuccess(`Invitation sent to ${form.email} (ID: ${form.employee_id})!`)
       setShowModal(false)
       setForm({ first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '' })
+      fetchEmployees()
       setTimeout(() => setInviteSuccess(''), 4000)
     } catch (err) {
       setInviteError(err.response?.data?.message || 'Failed to send invitation')
@@ -94,36 +122,50 @@ export default function AdminEmployees() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((emp, i) => (
-                <tr key={emp.id}
-                  style={{ borderBottom: '1px solid #f9fafb' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
-                  onMouseLeave={e => e.currentTarget.style.background = ''}
-                >
-                  <td style={{ padding: '14px 20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Avatar name={emp.name} size={34} bgColor={avatarColor(i)} />
-                      <span style={{ fontSize: 13, fontWeight: 500, color: '#172B3A' }}>{emp.name}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: '14px 20px' }}>
-                    <span style={{ fontSize: 12, background: '#EBF4FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>{emp.employee_id}</span>
-                  </td>
-                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.email}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.dept}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.position}</td>
-                  <td style={{ padding: '14px 20px' }}>
-                    <span style={{ fontSize: 12, background: '#EAF6FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 500 }}>{emp.role}</span>
-                  </td>
-                  <td style={{ padding: '14px 20px' }}><Badge status={emp.status} /></td>
-                  <td style={{ padding: '14px 20px' }}>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
-                      <button title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                    Loading employees...
                   </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                    No employees found.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((emp, i) => (
+                  <tr key={emp.id}
+                    style={{ borderBottom: '1px solid #f9fafb' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+                    onMouseLeave={e => e.currentTarget.style.background = ''}
+                  >
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Avatar name={emp.name} size={34} bgColor={avatarColor(i)} />
+                        <span style={{ fontSize: 13, fontWeight: 500, color: '#172B3A' }}>{emp.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '14px 20px' }}>
+                      <span style={{ fontSize: 12, background: '#EBF4FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>{emp.employee_id}</span>
+                    </td>
+                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.email}</td>
+                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.dept}</td>
+                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.position}</td>
+                    <td style={{ padding: '14px 20px' }}>
+                      <span style={{ fontSize: 12, background: '#EAF6FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 500 }}>{emp.role}</span>
+                    </td>
+                    <td style={{ padding: '14px 20px' }}><Badge status={emp.status} /></td>
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
+                        <button title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
