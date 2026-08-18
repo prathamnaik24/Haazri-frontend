@@ -7,11 +7,11 @@ import { SearchIcon } from '../../components/ui/Icons.jsx'
 import api from '../../services/api.js'
 
 const mockEmployees = [
-  { id: 1, name: 'John Admin',   email: 'john.admin@acme-corp.com',  dept: 'Engineering',   position: 'CEO',              role: 'Org Admin', status: 'Active' },
-  { id: 2, name: 'Aisha Khan',   email: 'aisha@acme-corp.com',       dept: 'Engineering',   position: 'Senior Developer', role: 'Employee',  status: 'Active' },
-  { id: 3, name: 'Rohan Mehta',  email: 'rohan@acme-corp.com',       dept: 'Engineering',   position: 'Junior Developer', role: 'Employee',  status: 'Active' },
-  { id: 4, name: 'Sara Ahmed',   email: 'sara@acme-corp.com',        dept: 'Human Resources',position: 'HR Director',     role: 'HR Manager',status: 'Active' },
-  { id: 5, name: 'James Wilson', email: 'james@acme-corp.com',       dept: 'Finance',        position: 'CTO',             role: 'Employee',  status: 'Inactive' },
+  { id: 1, name: 'John Admin',   email: 'john.admin@acme-corp.com',  dept: 'Engineering',    position: 'CEO',              role: 'Org Admin', status: 'Active',   employee_id: 'ADM-001' },
+  { id: 2, name: 'Aisha Khan',   email: 'aisha@acme-corp.com',       dept: 'Engineering',    position: 'Senior Developer', role: 'Employee',  status: 'Active',   employee_id: 'EMP-001' },
+  { id: 3, name: 'Rohan Mehta',  email: 'rohan@acme-corp.com',       dept: 'Engineering',    position: 'Junior Developer', role: 'Employee',  status: 'Active',   employee_id: 'EMP-002' },
+  { id: 4, name: 'Sara Ahmed',   email: 'sara@acme-corp.com',        dept: 'Human Resources',position: 'HR Director',      role: 'HR Manager',status: 'Active',   employee_id: 'HR-001'  },
+  { id: 5, name: 'James Wilson', email: 'james@acme-corp.com',       dept: 'Finance',        position: 'CTO',              role: 'Employee',  status: 'Inactive', employee_id: 'EMP-003' },
 ]
 
 const depts = ['All', 'Engineering', 'Human Resources', 'Finance']
@@ -25,7 +25,7 @@ export default function AdminEmployees() {
   const [inviteSuccess, setInviteSuccess] = useState('')
   const [inviteError, setInviteError] = useState('')
   const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '', department: '', position_title: '',
+    first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '',
   })
 
   const filtered = employees.filter(emp => {
@@ -41,9 +41,9 @@ export default function AdminEmployees() {
     setInviteError('')
     try {
       await api.post('/org/employees', form)
-      setInviteSuccess(`Invitation sent to ${form.email}!`)
+      setInviteSuccess(`Invitation sent to ${form.email} (ID: ${form.employee_id})!`)
       setShowModal(false)
-      setForm({ first_name: '', last_name: '', email: '', department: '', position_title: '' })
+      setForm({ first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '' })
       setTimeout(() => setInviteSuccess(''), 4000)
     } catch (err) {
       setInviteError(err.response?.data?.message || 'Failed to send invitation')
@@ -88,7 +88,7 @@ export default function AdminEmployees() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f9fafb' }}>
-                {['Name', 'Email', 'Department', 'Position', 'Role', 'Status', 'Actions'].map(h => (
+                {['Name', 'Employee ID', 'Email', 'Department', 'Position', 'Role', 'Status', 'Actions'].map(h => (
                   <th key={h} style={{ padding: '11px 20px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#374151', borderBottom: '1px solid #f3f4f6' }}>{h}</th>
                 ))}
               </tr>
@@ -105,6 +105,9 @@ export default function AdminEmployees() {
                       <Avatar name={emp.name} size={34} bgColor={avatarColor(i)} />
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#172B3A' }}>{emp.name}</span>
                     </div>
+                  </td>
+                  <td style={{ padding: '14px 20px' }}>
+                    <span style={{ fontSize: 12, background: '#EBF4FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>{emp.employee_id}</span>
                   </td>
                   <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.email}</td>
                   <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.dept}</td>
@@ -160,6 +163,12 @@ export default function AdminEmployees() {
                     <label style={formLabel}>Email Address</label>
                     <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                       placeholder="employee@company.com" style={formInput} required />
+                  </div>
+                  <div>
+                    <label style={formLabel}>Employee ID <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input value={form.employee_id} onChange={e => setForm(f => ({ ...f, employee_id: e.target.value }))}
+                      placeholder="e.g. EMP-001, STU-2024-045, HR-012" style={{ ...formInput, fontFamily: 'monospace' }} required />
+                    <p style={{ fontSize: 11, color: '#9ca3af', margin: '4px 0 0' }}>This ID is what the employee will use to log in. You assign and manage it.</p>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div>
