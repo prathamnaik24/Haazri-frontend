@@ -3,22 +3,22 @@ import AppShell from '../../components/layout/AppShell.jsx'
 import { card, cardTitle, table, th, td } from '../../components/ui/styles.js'
 import { AuditIcon, SearchIcon } from '../../components/ui/Icons.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
+import api from '../../services/api.js'
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Temporarily use mock data
   useEffect(() => {
-    setTimeout(() => {
-      setLogs([
-        { id: 1, action: 'SEED', entity: 'Organization', user: 'System', date: '2026-08-18 12:00:00', details: 'Initial DB seed' },
-        { id: 2, action: 'CREATE', entity: 'Employee', user: 'John Admin', date: '2026-08-18 12:05:32', details: 'Created employee john.doe' },
-        { id: 3, action: 'UPDATE', entity: 'Role', user: 'John Admin', date: '2026-08-18 12:10:15', details: 'Updated permissions for HR Manager' },
-        { id: 4, action: 'DELETE', entity: 'Leave Request', user: 'Jane Manager', date: '2026-08-18 14:20:00', details: 'Deleted duplicate request #45' },
-      ])
-      setLoading(false)
-    }, 500)
+    api.get('/admin/audit')
+      .then(res => {
+        setLogs(res.data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Failed to load audit logs:', err)
+        setLoading(false)
+      })
   }, [])
 
   return (
@@ -54,7 +54,9 @@ export default function AuditLogs() {
               <tbody>
                 {logs.map(log => (
                   <tr key={log.id} style={{ borderBottom: '1px solid #EDF3F6' }}>
-                    <td style={{ ...td, color: '#526B7A', fontSize: 13 }}>{log.date}</td>
+                    <td style={{ ...td, color: '#526B7A', fontSize: 13 }}>
+                      {new Date(log.created_at).toLocaleString()}
+                    </td>
                     <td style={{ ...td }}>
                       <span style={{ 
                         fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
@@ -64,9 +66,13 @@ export default function AuditLogs() {
                         {log.action}
                       </span>
                     </td>
-                    <td style={{ ...td, fontWeight: 600, color: '#172B3A' }}>{log.entity}</td>
-                    <td style={{ ...td }}>{log.user}</td>
-                    <td style={{ ...td, color: '#526B7A' }}>{log.details}</td>
+                    <td style={{ ...td, fontWeight: 600, color: '#172B3A' }}>
+                      {log.entity_type ? log.entity_type.toUpperCase() : ''}
+                    </td>
+                    <td style={{ ...td }}>
+                      {log.first_name ? `${log.first_name} ${log.last_name}` : 'System'}
+                    </td>
+                    <td style={{ ...td, color: '#526B7A' }}>{log.reason || 'No description provided'}</td>
                   </tr>
                 ))}
               </tbody>

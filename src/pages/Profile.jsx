@@ -18,7 +18,7 @@ export default function Profile() {
 
   useEffect(() => {
     api.get('/auth/me')
-      .then(res => setProfile(res.data.data))
+      .then(res => setProfile(res.data.data.user))
       .catch(() => setProfile({ ...tokenUser, email: tokenUser?.email || '' }))
       .finally(() => setLoading(false))
   }, [])

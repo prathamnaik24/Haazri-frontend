@@ -2,40 +2,43 @@ import React, { useState, useEffect } from 'react'
 import AppShell from '../../components/layout/AppShell.jsx'
 import { card, cardTitle } from '../../components/ui/styles.js'
 import { OrgIcon, PlusIcon } from '../../components/ui/Icons.jsx'
+import api from '../../services/api.js'
 
 export default function OrgStructure() {
   const [hierarchy, setHierarchy] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Temporarily use mock data
   useEffect(() => {
-    setTimeout(() => {
-      setHierarchy([
-        {
-          id: 'ceo',
-          title: 'CEO',
-          name: 'John Admin',
-          children: [
-            {
-              id: 'cto',
-              title: 'CTO',
-              name: 'Vacant',
-              children: [
-                { id: 'senior_dev', title: 'Senior Developer', name: 'Vacant', children: [] },
-                { id: 'junior_dev', title: 'Junior Developer', name: 'Vacant', children: [] }
-              ]
-            },
-            {
-              id: 'hr_dir',
-              title: 'HR Director',
-              name: 'Vacant',
-              children: []
-            }
-          ]
-        }
-      ])
-      setLoading(false)
-    }, 500)
+    api.get('/admin/org-structure/positions')
+      .then(res => {
+        const positions = res.data;
+        const map = {};
+        positions.forEach(pos => {
+          map[pos.id] = {
+            id: pos.id,
+            title: pos.title,
+            name: pos.first_name ? `${pos.first_name} ${pos.last_name}` : 'Vacant',
+            children: []
+          };
+        });
+
+        const roots = [];
+        positions.forEach(pos => {
+          const mapped = map[pos.id];
+          if (pos.parent_id && map[pos.parent_id]) {
+            map[pos.parent_id].children.push(mapped);
+          } else {
+            roots.push(mapped);
+          }
+        });
+
+        setHierarchy(roots);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load org structure:', err);
+        setLoading(false);
+      });
   }, [])
 
   const renderTree = (nodes) => {
