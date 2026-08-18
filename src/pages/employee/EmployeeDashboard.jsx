@@ -15,9 +15,9 @@ const mockAttendance = [
 
 // ─── Attendance Calendar ──────────────────────────────────────────────────────
 const STATUS_COLOR = {
-  present: { bg: '#22c55e', text: '#ffffff' },
+  present: { bg: '#1677B8', text: '#ffffff' },
   late:    { bg: '#f59e0b', text: '#ffffff' },
-  leave:   { bg: '#3b82f6', text: '#ffffff' },
+  leave:   { bg: '#517891', text: '#ffffff' },
   absent:  { bg: '#ef4444', text: '#ffffff' },
   weekend: { bg: 'transparent', text: '#d1d5db' },
   future:  { bg: 'transparent', text: '#9ca3af' },
@@ -66,9 +66,9 @@ function AttendanceCalendar() {
 
   // Stats
   const stats = [
-    { label: 'Present', color: '#22c55e', count: Object.values(MOCK_STATUS_MAP).filter(s => s === 'present').length },
+    { label: 'Present', color: '#1677B8', count: Object.values(MOCK_STATUS_MAP).filter(s => s === 'present').length },
     { label: 'Late',    color: '#f59e0b', count: Object.values(MOCK_STATUS_MAP).filter(s => s === 'late').length },
-    { label: 'Leave',   color: '#3b82f6', count: Object.values(MOCK_STATUS_MAP).filter(s => s === 'leave').length },
+    { label: 'Leave',   color: '#517891', count: Object.values(MOCK_STATUS_MAP).filter(s => s === 'leave').length },
     { label: 'Absent',  color: '#ef4444', count: Object.values(MOCK_STATUS_MAP).filter(s => s === 'absent').length },
   ]
 
@@ -137,9 +137,9 @@ function AttendanceCalendar() {
       {/* Legend */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: 16, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
         {[
-          { label: 'Present', color: '#22c55e' },
+          { label: 'Present', color: '#1677B8' },
           { label: 'Late',    color: '#f59e0b' },
-          { label: 'Leave',   color: '#3b82f6' },
+          { label: 'Leave',   color: '#517891' },
           { label: 'Absent',  color: '#ef4444' },
           { label: 'Today',   color: '#172B3A' },
         ].map(l => (
@@ -222,7 +222,7 @@ function CheckInWidget({ user }) {
         <div style={{ fontSize: 48, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em' }}>{time}</div>
         {checkedIn && (
           <div style={{ fontSize: 14, color: '#6b7280', marginTop: 8 }}>
-            Working time: <span style={{ fontWeight: 600, color: '#22c55e' }}>{elapsed}</span>
+            Working time: <span style={{ fontWeight: 600, color: '#1677B8' }}>{elapsed}</span>
           </div>
         )}
       </div>
@@ -239,7 +239,7 @@ function CheckInWidget({ user }) {
           style={{
             padding: '10px 28px', borderRadius: 8, border: 'none',
             cursor: loading ? 'not-allowed' : 'pointer',
-            background: checkedIn ? '#FEE2E2' : '#22c55e',
+            background: checkedIn ? '#FEE2E2' : '#1677B8',
             color: checkedIn ? '#dc2626' : '#ffffff',
             fontSize: 14, fontWeight: 600,
           }}
@@ -264,8 +264,8 @@ export default function EmployeeDashboard() {
           <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 style={cardTitle}>Leave Balance</h2>
             {[
-              { type: 'Annual Leave', used: 2, total: 10, color: '#22c55e', bg: '#dcfce7' },
-              { type: 'Sick Leave',   used: 1, total: 7,  color: '#3b82f6', bg: '#dbeafe' },
+              { type: 'Annual Leave', used: 2, total: 10, color: '#1677B8', bg: '#EAF6FF' },
+              { type: 'Sick Leave',   used: 1, total: 7,  color: '#517891', bg: '#EDF3F6' },
               { type: 'Casual Leave', used: 0, total: 5,  color: '#f59e0b', bg: '#fef3c7' },
             ].map(leave => (
               <div key={leave.type}>
