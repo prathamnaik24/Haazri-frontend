@@ -1,32 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AppShell from '../../components/layout/AppShell.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
 import { card, cardTitle, formLabel, formInput } from '../../components/ui/styles.js'
 import api from '../../services/api.js'
 
-const leaveBalances = [
-  { type: 'Annual Leave', used: 2, total: 10, color: '#57B9FF', bg: '#EAF6FF' },
-  { type: 'Sick Leave',   used: 1, total: 7,  color: '#22c55e', bg: '#d1fae5' },
-  { type: 'Casual Leave', used: 0, total: 5,  color: '#f59e0b', bg: '#fef3c7' },
-]
-
-const mockLeaveHistory = [
-  { type: 'Annual Leave', from: '2026-08-11', to: '2026-08-11', days: 1, reason: 'Personal work', status: 'Approved' },
-  { type: 'Sick Leave',   from: '2026-07-22', to: '2026-07-22', days: 1, reason: 'Not feeling well', status: 'Approved' },
-  { type: 'Annual Leave', from: '2026-07-01', to: '2026-07-03', days: 3, reason: 'Family event', status: 'Rejected' },
-]
-
 export default function MyLeave() {
+  const [leaveTypes, setLeaveTypes] = useState([])
+  const [balances, setBalances] = useState([])
+  const [history, setHistory] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
   const [form, setForm] = useState({
-    leave_type: 'Annual Leave',
+    leave_type_id: '',
     start_date: '',
     end_date: '',
     reason: '',
   })
+
+  const loadData = async () => {
+    try {
+      const typesRes = await api.get('/leaves/types')
+      const meRes = await api.get('/leaves/me')
+      
+      setLeaveTypes(typesRes.data.data)
+      setBalances(meRes.data.data.balances)
+      setHistory(meRes.data.data.requests)
+      
+      if (typesRes.data.data.length > 0) {
+        setForm(f => ({ ...f, leave_type_id: typesRes.data.data[0].id }))
+      }
+    } catch (err) {
+      console.error('Failed to load leave data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -36,13 +51,46 @@ export default function MyLeave() {
       await api.post('/leaves/request', form)
       setSuccess('Leave request submitted successfully!')
       setShowForm(false)
-      setForm({ leave_type: 'Annual Leave', start_date: '', end_date: '', reason: '' })
+      if (leaveTypes.length > 0) {
+        setForm({ leave_type_id: leaveTypes[0].id, start_date: '', end_date: '', reason: '' })
+      } else {
+        setForm({ leave_type_id: '', start_date: '', end_date: '', reason: '' })
+      }
+      loadData()
+      setTimeout(() => setSuccess(''), 4000)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to submit leave request')
     } finally {
       setSubmitting(false)
     }
   }
+
+  // Calculate stats dynamically for cards
+  const renderedBalances = leaveTypes.map(lt => {
+    const balRecord = balances.find(b => b.leave_type_id === lt.id)
+    const balanceVal = balRecord ? parseFloat(balRecord.balance) : 15.0
+    const totalDays = 15.0
+    const usedDays = totalDays - balanceVal
+
+    let color = '#57B9FF'
+    let bg = '#EAF6FF'
+    if (lt.name.toLowerCase().includes('sick')) {
+      color = '#22c55e'
+      bg = '#d1fae5'
+    } else if (lt.name.toLowerCase().includes('casual')) {
+      color = '#f59e0b'
+      bg = '#fef3c7'
+    }
+
+    return {
+      type: lt.name,
+      used: usedDays,
+      total: totalDays,
+      color,
+      bg,
+      balance: balanceVal
+    }
+  })
 
   return (
     <AppShell>
@@ -64,21 +112,25 @@ export default function MyLeave() {
         )}
 
         {/* Balance Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {leaveBalances.map(lb => (
-            <div key={lb.type} style={card}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#6b7280', marginBottom: 12 }}>{lb.type}</div>
-              <div style={{ fontSize: 32, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em', marginBottom: 8 }}>
-                {lb.total - lb.used}
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#9ca3af' }}> / {lb.total}</span>
+        {loading ? (
+          <div style={{ color: '#526B7A', fontSize: 14 }}>Loading balances...</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            {renderedBalances.map(lb => (
+              <div key={lb.type} style={card}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: '#6b7280', marginBottom: 12 }}>{lb.type}</div>
+                <div style={{ fontSize: 32, fontWeight: 700, color: '#172B3A', letterSpacing: '-0.03em', marginBottom: 8 }}>
+                  {lb.balance}
+                  <span style={{ fontSize: 14, fontWeight: 500, color: '#9ca3af' }}> / {lb.total}</span>
+                </div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>Days remaining</div>
+                <div style={{ height: 6, borderRadius: 6, background: lb.bg, overflow: 'hidden' }}>
+                  <div style={{ width: `${(lb.used / lb.total) * 100}%`, height: '100%', background: lb.color, borderRadius: 6 }} />
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>Days remaining</div>
-              <div style={{ height: 6, borderRadius: 6, background: lb.bg, overflow: 'hidden' }}>
-                <div style={{ width: `${(lb.used / lb.total) * 100}%`, height: '100%', background: lb.color, borderRadius: 6 }} />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Leave History */}
         <div style={card}>
@@ -92,20 +144,37 @@ export default function MyLeave() {
               </tr>
             </thead>
             <tbody>
-              {mockLeaveHistory.map((row, i) => (
-                <tr key={i}
-                  style={{ borderBottom: '1px solid #f9fafb' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
-                  onMouseLeave={e => e.currentTarget.style.background = ''}
-                >
-                  <td style={{ padding: '13px 16px', fontSize: 13, color: '#374151', fontWeight: 500 }}>{row.type}</td>
-                  <td style={{ padding: '13px 16px', fontSize: 13, color: '#6b7280' }}>{row.from}</td>
-                  <td style={{ padding: '13px 16px', fontSize: 13, color: '#6b7280' }}>{row.to}</td>
-                  <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 600, color: '#374151' }}>{row.days}</td>
-                  <td style={{ padding: '13px 16px', fontSize: 13, color: '#6b7280', maxWidth: 200 }}>{row.reason}</td>
-                  <td style={{ padding: '13px 16px' }}><Badge status={row.status} /></td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                    Loading request history...
+                  </td>
                 </tr>
-              ))}
+              ) : history.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                    No leave requests found.
+                  </td>
+                </tr>
+              ) : (
+                history.map((row, i) => {
+                  const days = Math.round((new Date(row.end_date) - new Date(row.start_date)) / (1000 * 60 * 60 * 24)) + 1
+                  return (
+                    <tr key={row.id}
+                      style={{ borderBottom: '1px solid #f9fafb' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+                      onMouseLeave={e => e.currentTarget.style.background = ''}
+                    >
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#374151', fontWeight: 500 }}>{row.leave_type_name}</td>
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#6b7280' }}>{new Date(row.start_date).toLocaleDateString()}</td>
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#6b7280' }}>{new Date(row.end_date).toLocaleDateString()}</td>
+                      <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 600, color: '#374151' }}>{days}</td>
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#6b7280', maxWidth: 200 }}>{row.reason}</td>
+                      <td style={{ padding: '13px 16px' }}><Badge status={row.status} /></td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -131,11 +200,11 @@ export default function MyLeave() {
                   {error && <div style={{ background: '#fee2e2', color: '#dc2626', padding: '10px 14px', borderRadius: 8, fontSize: 13 }}>{error}</div>}
                   <div>
                     <label style={formLabel}>Leave Type</label>
-                    <select value={form.leave_type} onChange={e => setForm(f => ({ ...f, leave_type: e.target.value }))}
+                    <select value={form.leave_type_id} onChange={e => setForm(f => ({ ...f, leave_type_id: e.target.value }))}
                       style={{ ...formInput, cursor: 'pointer' }} required>
-                      <option>Annual Leave</option>
-                      <option>Sick Leave</option>
-                      <option>Casual Leave</option>
+                      {leaveTypes.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
                     </select>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

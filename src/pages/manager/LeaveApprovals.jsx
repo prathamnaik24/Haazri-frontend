@@ -1,31 +1,53 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AppShell from '../../components/layout/AppShell.jsx'
 import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
 import api from '../../services/api.js'
 
-const mockRequests = [
-  { id: 'lr-001', name: 'Aisha Khan',   type: 'Annual Leave', from: '2026-08-18', to: '2026-08-20', days: 3, reason: 'Family vacation trip',  balance: 8,  status: 'Pending' },
-  { id: 'lr-002', name: 'Rohan Mehta',  type: 'Sick Leave',   from: '2026-08-15', to: '2026-08-15', days: 1, reason: 'Feeling unwell (fever)', balance: 5,  status: 'Pending' },
-  { id: 'lr-003', name: 'Sara Ahmed',   type: 'Casual Leave', from: '2026-08-16', to: '2026-08-16', days: 1, reason: 'Personal errand',        balance: 4,  status: 'Pending' },
-]
-
 export default function LeaveApprovals() {
-  const [requests, setRequests] = useState(mockRequests)
+  const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState({})
   const [message, setMessage] = useState('')
 
+  const fetchPending = () => {
+    api.get('/leaves/team/pending')
+      .then(res => {
+        const formatted = res.data.data.map(req => {
+          const days = Math.round((new Date(req.end_date) - new Date(req.start_date)) / (1000 * 60 * 60 * 24)) + 1
+          return {
+            id: req.id,
+            name: `${req.employee.first_name || ''} ${req.employee.last_name || ''}`.trim(),
+            type: req.leave_type.name,
+            from: new Date(req.start_date).toLocaleDateString(),
+            to: new Date(req.end_date).toLocaleDateString(),
+            days,
+            reason: req.reason || 'No reason provided',
+            balance: 15, // fallback total
+            status: req.status
+          }
+        })
+        setRequests(formatted)
+      })
+      .catch(err => {
+        console.error('Failed to fetch pending leaves:', err)
+      })
+  }
+
+  useEffect(() => {
+    fetchPending()
+  }, [])
+
   const handleAction = async (id, action) => {
     setLoading(l => ({ ...l, [id]: action }))
+    const backendAction = action === 'approve' ? 'Approved' : 'Rejected'
     try {
-      await api.patch(`/leaves/request/${id}/action`, { action })
+      await api.patch(`/leaves/request/${id}/action`, { action: backendAction })
       setRequests(prev => prev.filter(r => r.id !== id))
       setMessage(`Leave request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`)
       setTimeout(() => setMessage(''), 3000)
-    } catch {
-      // On error with mock data, just update UI
-      setRequests(prev => prev.filter(r => r.id !== id))
-      setMessage(`Request ${action}d.`)
+    } catch (err) {
+      console.error('Failed to action leave request:', err)
+      setMessage('Failed to update leave request.')
       setTimeout(() => setMessage(''), 3000)
     } finally {
       setLoading(l => ({ ...l, [id]: null }))
