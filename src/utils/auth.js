@@ -18,17 +18,47 @@ export function getUserFromToken() {
   return decodeToken(getStoredToken())
 }
 
-// Returns the primary role string: 'org_admin', 'Manager', 'Employee', etc.
+/**
+ * Returns the canonical role string used for routing and UI gating.
+ *
+ * Roles returned:
+ *   'org_admin' — Organization admin (full access)
+ *   'manager'   — Supervisor / manager / HR (team-scoped access)
+ *   'employee'  — Regular employee (own data only)
+ */
 export function getUserRole() {
   const user = getUserFromToken()
   if (!user) return null
-  // type field from OrgAuthService = 'org_admin'
+
+  // Primary type set by OrgAuthService at login
   if (user.type === 'org_admin') return 'org_admin'
-  // For employees, check the roles array
-  const roles = user.roles || []
-  if (roles.includes('Org Admin')) return 'org_admin'
-  if (roles.some(r => r.toLowerCase().includes('manager') || r.toLowerCase().includes('hr'))) return 'manager'
+
+  // Roles array from JWT
+  const roles = (user.roles || []).map(r => r.toLowerCase())
+
+  if (roles.includes('org admin')) return 'org_admin'
+
+  // Supervisor / manager / HR — all get team-scoped access
+  const managerKeywords = ['manager', 'supervisor', 'hr', 'team lead', 'lead', 'head', 'director', 'chief', 'vp', 'vice president']
+  if (roles.some(r => managerKeywords.some(kw => r.includes(kw)))) return 'manager'
+
   return 'employee'
+}
+
+/**
+ * Returns whether the current user can see team-level data.
+ * Managers and Org Admins can; regular employees cannot.
+ */
+export function canViewTeamData() {
+  const role = getUserRole()
+  return role === 'manager' || role === 'org_admin'
+}
+
+/**
+ * Returns whether the current user has full org-level admin access.
+ */
+export function isOrgAdmin() {
+  return getUserRole() === 'org_admin'
 }
 
 export function logout() {
