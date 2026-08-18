@@ -105,3 +105,8 @@ export const tableCell = {
   color: '#526B7A',
   borderBottom: '1px solid #D7E6EF',
 }
+
+export const table = { width: '100%', borderCollapse: 'collapse' }
+export const th = { padding: '11px 20px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#334E5C', background: '#EAF6FF', borderBottom: '1px solid #D7E6EF', whiteSpace: 'nowrap' }
+export const td = { padding: '14px 20px', fontSize: 13, color: '#526B7A', borderBottom: '1px solid #D7E6EF' }
+

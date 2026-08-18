@@ -15,7 +15,7 @@ const labelStyle = { display: 'block', fontSize: 13, fontWeight: 500, color: '#3
 
 export default function OrgLogin() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ org_slug: '', email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
@@ -53,6 +53,9 @@ export default function OrgLogin() {
         {error && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: 10, fontSize: 13, marginBottom: 20 }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
+          <label style={labelStyle}>Workspace Code</label>
+          <input type="text" name="org_slug" placeholder="e.g. acme-corp" value={formData.org_slug} onChange={handleChange} required style={{ ...inputStyle, marginBottom: 18 }} onFocus={focus} onBlur={blur} />
+
           <label style={labelStyle}>Email</label>
           <input type="email" name="email" placeholder="Enter your work email" value={formData.email} onChange={handleChange} required style={{ ...inputStyle, marginBottom: 18 }} onFocus={focus} onBlur={blur} />
 

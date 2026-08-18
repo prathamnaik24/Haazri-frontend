@@ -4,6 +4,7 @@ import AppShell from '../../components/layout/AppShell.jsx'
 import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
 import { card, cardTitle, dateBadge } from '../../components/ui/styles.js'
 import { CalendarIcon } from '../../components/ui/Icons.jsx'
+import AttendanceCalendar from '../../components/dashboard/AttendanceCalendar.jsx'
 
 const attendanceData = [
   { day: 'Mon', present: 38, absent: 4 },
@@ -164,6 +165,15 @@ export default function AdminDashboard() {
               <Bar dataKey="absent" fill="#57B9FF" radius={[6, 6, 6, 6]} name="absent" />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+
+        {/* Attendance Calendar Widget */}
+        <div style={card}>
+          <div style={{ marginBottom: 16 }}>
+            <h2 style={cardTitle}>Organization Calendar</h2>
+            <p style={{ fontSize: 13, color: '#526B7A', margin: 0 }}>View global attendance and holidays</p>
+          </div>
+          <AttendanceCalendar />
         </div>
 
       </div>

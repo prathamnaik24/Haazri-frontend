@@ -20,6 +20,10 @@ import LeaveApprovals from '../pages/manager/LeaveApprovals'
 // Admin pages
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEmployees from '../pages/admin/AdminEmployees'
+import OrgStructure from '../pages/admin/OrgStructure'
+import RolesPermissions from '../pages/admin/RolesPermissions'
+import Reports from '../pages/admin/Reports'
+import AuditLogs from '../pages/admin/AuditLogs'
 
 // Shared pages
 import Profile from '../pages/Profile'
@@ -69,6 +73,10 @@ export const router = createBrowserRouter([
 
   // Admin
   { path: '/app/employees',       element: <AdminEmployees /> },
+  { path: '/app/org-structure',   element: <OrgStructure /> },
+  { path: '/app/roles',           element: <RolesPermissions /> },
+  { path: '/app/reports',         element: <Reports /> },
+  { path: '/app/audit-logs',      element: <AuditLogs /> },
 
   // Shared
   { path: '/app/profile',         element: <Profile /> },
