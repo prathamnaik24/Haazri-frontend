@@ -81,6 +81,7 @@ export const router = createBrowserRouter([
   // Shared
   { path: '/app/profile',         element: <Profile /> },
   { path: '/invite',              element: <AcceptInvite /> },
+  { path: '/accept-invite',       element: <AcceptInvite /> },
 
   // Catch-all
   { path: '*', element: <Navigate to="/" replace /> },

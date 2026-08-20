@@ -51,9 +51,8 @@ export default function AcceptInvite() {
         token,
         password: form.password,
       })
-      localStorage.setItem('token', res.data.data.tokens.accessToken)
       setStep('done')
-      setTimeout(() => navigate('/app'), 2000)
+      setTimeout(() => navigate('/employee-login'), 3000)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to activate account. The link may have expired.')
     } finally {
@@ -96,7 +95,7 @@ export default function AcceptInvite() {
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: 56, marginBottom: 12 }}>✅</div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: '#172B3A', marginBottom: 6 }}>You're all set!</div>
-                <div style={{ fontSize: 13, color: '#9ca3af' }}>Signing you in...</div>
+                <div style={{ fontSize: 13, color: '#9ca3af' }}>Redirecting to login...</div>
               </div>
             ) : (
               <form onSubmit={step === 'verify' ? (e) => { e.preventDefault(); handleVerify() } : handleActivate}>

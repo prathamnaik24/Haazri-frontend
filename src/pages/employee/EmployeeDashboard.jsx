@@ -117,6 +117,44 @@ function CheckInWidget({ user }) {
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function EmployeeDashboard() {
   const user = getUserFromToken()
+  const [leaveTypes, setLeaveTypes] = useState([])
+  const [balances, setBalances] = useState([])
+
+  useEffect(() => {
+    async function loadLeaves() {
+      try {
+        const typesRes = await api.get('/leaves/types')
+        const meRes = await api.get('/leaves/me')
+        setLeaveTypes(typesRes.data.data)
+        setBalances(meRes.data.data.balances)
+      } catch (err) {
+        console.error('Failed to load leaves:', err)
+      }
+    }
+    loadLeaves()
+  }, [])
+
+  const renderedBalances = leaveTypes.map(lt => {
+    const balRecord = balances.find(b => b.leave_type_id === lt.id)
+    const totalDays = parseFloat(lt.days_allowed || 15.0)
+    const balanceVal = balRecord ? parseFloat(balRecord.balance) : totalDays
+    const usedDays = totalDays - balanceVal
+
+    let color = '#57B9FF'
+    let bg = '#EAF6FF'
+    if (lt.name.toLowerCase().includes('sick')) {
+      color = '#22c55e'
+      bg = '#d1fae5'
+    } else if (lt.name.toLowerCase().includes('casual')) {
+      color = '#f59e0b'
+      bg = '#fef3c7'
+    } else if (lt.name.toLowerCase().includes('emergency')) {
+      color = '#ef4444'
+      bg = '#fee2e2'
+    }
+
+    return { type: lt.name, used: usedDays, total: totalDays, color, bg, balance: balanceVal }
+  })
 
   return (
     <AppShell>
@@ -126,21 +164,21 @@ export default function EmployeeDashboard() {
           <CheckInWidget user={user} />
           <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 style={cardTitle}>Leave Balance</h2>
-            {[
-              { type: 'Annual Leave', used: 2, total: 10, color: '#1677B8', bg: '#EAF6FF' },
-              { type: 'Sick Leave',   used: 1, total: 7,  color: '#517891', bg: '#EDF3F6' },
-              { type: 'Casual Leave', used: 0, total: 5,  color: '#f59e0b', bg: '#fef3c7' },
-            ].map(leave => (
-              <div key={leave.type}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151', fontWeight: 500, marginBottom: 6 }}>
-                  <span>{leave.type}</span>
-                  <span style={{ color: '#6b7280' }}>{leave.total - leave.used} of {leave.total} days left</span>
+            {renderedBalances.length === 0 ? (
+              <div style={{ fontSize: 13, color: '#526B7A' }}>Loading balances...</div>
+            ) : (
+              renderedBalances.map(leave => (
+                <div key={leave.type}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151', fontWeight: 500, marginBottom: 6 }}>
+                    <span>{leave.type}</span>
+                    <span style={{ color: '#6b7280' }}>{leave.balance} of {leave.total} days left</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 8, background: leave.bg, overflow: 'hidden' }}>
+                    <div style={{ width: `${(leave.used / leave.total) * 100}%`, height: '100%', background: leave.color, borderRadius: 8 }} />
+                  </div>
                 </div>
-                <div style={{ height: 8, borderRadius: 8, background: leave.bg, overflow: 'hidden' }}>
-                  <div style={{ width: `${(leave.used / leave.total) * 100}%`, height: '100%', background: leave.color, borderRadius: 8 }} />
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

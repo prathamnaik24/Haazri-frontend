@@ -62,21 +62,71 @@ export default function AdminEmployees() {
     return matchSearch && matchDept
   })
 
+  const [viewModal, setViewModal] = useState({ show: false, employee: null })
+  const [editModal, setEditModal] = useState({ show: false, employee: null })
+  const [editForm, setEditForm] = useState({ first_name: '', last_name: '', employee_id: '', is_active: true })
+  const [updating, setUpdating] = useState(false)
+
+  const openEditModal = (emp) => {
+    const names = emp.name.split(' ')
+    setEditForm({
+      first_name: names[0] || '',
+      last_name: names.slice(1).join(' ') || '',
+      employee_id: emp.employee_id === '—' ? '' : emp.employee_id,
+      is_active: emp.status === 'Active'
+    })
+    setEditModal({ show: true, employee: emp })
+  }
+
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+    setUpdating(true)
+    try {
+      await api.patch(`/org/employees/${editModal.employee.id}`, editForm)
+      setEditModal({ show: false, employee: null })
+      fetchEmployees()
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update employee')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const [inviteResult, setInviteResult] = useState(null) // { email, employee_id, invite_link }
+
   const handleInvite = async (e) => {
     e.preventDefault()
     setInviting(true)
     setInviteError('')
     try {
-      await api.post('/org/employees', form)
-      setInviteSuccess(`Invitation sent to ${form.email} (ID: ${form.employee_id})!`)
+      const res = await api.post('/org/employees', form)
+      const inviteData = res.data?.data?.invite || {}
+      setInviteResult({
+        email: form.email,
+        employee_id: form.employee_id,
+        invite_link: inviteData.invite_link
+      })
       setShowModal(false)
       setForm({ first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '' })
       fetchEmployees()
-      setTimeout(() => setInviteSuccess(''), 4000)
     } catch (err) {
       setInviteError(err.response?.data?.message || 'Failed to send invitation')
     } finally {
       setInviting(false)
+    }
+  }
+
+  const handleResendInvite = async (employeeId) => {
+    if (!window.confirm('Are you sure you want to resend the invitation? The previous link will be invalidated.')) return
+    try {
+      const res = await api.post(`/org/employees/${employeeId}/resend-invite`)
+      const inviteData = res.data?.data?.invite || {}
+      setInviteResult({
+        email: employees.find(e => e.id === employeeId)?.email || 'Employee',
+        invite_link: inviteData.invite_link
+      })
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to resend invitation')
     }
   }
 
@@ -159,8 +209,9 @@ export default function AdminEmployees() {
                     <td style={{ padding: '14px 20px' }}><Badge status={emp.status} /></td>
                     <td style={{ padding: '14px 20px' }}>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
-                        <button title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
+                        <button onClick={() => setViewModal({ show: true, employee: emp })} title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
+                        <button onClick={() => openEditModal(emp)} title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
+                        <button onClick={() => handleResendInvite(emp.id)} title="Resend Invite" style={{ background: '#fef3c7', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#d97706', cursor: 'pointer', fontWeight: 500 }}>Resend</button>
                       </div>
                     </td>
                   </tr>
@@ -169,6 +220,37 @@ export default function AdminEmployees() {
             </tbody>
           </table>
         </div>
+
+        {/* Invite Result Modal (Fallback Link) */}
+        {inviteResult && (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, backdropFilter: 'blur(2px)',
+          }}>
+            <div style={{ background: '#fff', borderRadius: 16, width: 500, maxWidth: '90vw', padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#d1fae5', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>✓</div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, color: '#172B3A' }}>Invitation Queued!</h3>
+                  <p style={{ margin: 0, fontSize: 13, color: '#6b7280' }}>An email is being sent to <strong>{inviteResult.email}</strong></p>
+                </div>
+              </div>
+              
+              <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 20 }}>
+                <p style={{ margin: '0 0 10px', fontSize: 13, color: '#4b5563', fontWeight: 500 }}>Manual Fallback Link</p>
+                <p style={{ margin: '0 0 10px', fontSize: 12, color: '#6b7280' }}>If the email fails to arrive, you can securely share this link with the employee:</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input readOnly value={inviteResult.invite_link} style={{ ...formInput, fontFamily: 'monospace', fontSize: 12 }} />
+                  <button onClick={() => navigator.clipboard.writeText(inviteResult.invite_link)} style={{ background: '#1677B8', color: '#fff', border: 'none', borderRadius: 6, padding: '0 16px', fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>Copy</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={() => setInviteResult(null)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, padding: '9px 24px', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Done</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Invite Modal */}
         {showModal && (
@@ -242,6 +324,118 @@ export default function AdminEmployees() {
             </div>
           </div>
         )}
+
+        {/* Edit Modal */}
+        {editModal.show && (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(2px)',
+          }}
+            onClick={e => { if (e.target === e.currentTarget) setEditModal({ show: false, employee: null }) }}
+          >
+            <div style={{ background: '#fff', borderRadius: 16, width: 500, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+              <div style={{ background: '#f9fafb', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb' }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: '#172B3A', margin: 0 }}>Edit Employee</h2>
+                <button onClick={() => setEditModal({ show: false, employee: null })}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  ×
+                </button>
+              </div>
+              <form onSubmit={handleUpdate}>
+                <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div>
+                      <label style={formLabel}>First Name</label>
+                      <input value={editForm.first_name} onChange={e => setEditForm(f => ({ ...f, first_name: e.target.value }))}
+                        placeholder="First name" style={formInput} required />
+                    </div>
+                    <div>
+                      <label style={formLabel}>Last Name</label>
+                      <input value={editForm.last_name} onChange={e => setEditForm(f => ({ ...f, last_name: e.target.value }))}
+                        placeholder="Last name" style={formInput} required />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={formLabel}>Employee ID</label>
+                    <input value={editForm.employee_id} onChange={e => setEditForm(f => ({ ...f, employee_id: e.target.value }))}
+                      placeholder="e.g. EMP-001" style={{ ...formInput, fontFamily: 'monospace' }} required />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '12px 16px', background: editForm.is_active ? '#f0fdf4' : '#fef2f2', border: `1px solid ${editForm.is_active ? '#bbf7d0' : '#fecaca'}`, borderRadius: 8 }}>
+                    <input 
+                      type="checkbox" 
+                      id="isActiveToggle" 
+                      checked={editForm.is_active} 
+                      onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))} 
+                      style={{ width: 16, height: 16, cursor: 'pointer' }}
+                    />
+                    <label htmlFor="isActiveToggle" style={{ fontSize: 13, fontWeight: 500, color: editForm.is_active ? '#15803d' : '#b91c1c', cursor: 'pointer', margin: 0 }}>
+                      {editForm.is_active ? 'Active Employee (Has access to log in)' : 'Deactivated (Access Revoked)'}
+                    </label>
+                  </div>
+                </div>
+                <div style={{ padding: '0 24px 24px', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                  <button type="button" onClick={() => setEditModal({ show: false, employee: null })}
+                    style={{ padding: '9px 24px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={updating}
+                    style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#1677B8', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                    {updating ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* View Modal */}
+        {viewModal.show && viewModal.employee && (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(2px)',
+          }}
+            onClick={e => { if (e.target === e.currentTarget) setViewModal({ show: false, employee: null }) }}
+          >
+            <div style={{ background: '#fff', borderRadius: 16, width: 400, maxWidth: '90vw', padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+                <Avatar name={viewModal.employee.name} size={64} bgColor="#1677B8" />
+                <div>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: '#172B3A', margin: '0 0 4px' }}>{viewModal.employee.name}</h2>
+                  <Badge status={viewModal.employee.status} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
+                  <span style={{ color: '#6b7280', fontSize: 13 }}>Employee ID</span>
+                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.employee_id}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
+                  <span style={{ color: '#6b7280', fontSize: 13 }}>Email</span>
+                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.email}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
+                  <span style={{ color: '#6b7280', fontSize: 13 }}>Role</span>
+                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.role}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
+                  <span style={{ color: '#6b7280', fontSize: 13 }}>Department</span>
+                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.dept}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
+                  <span style={{ color: '#6b7280', fontSize: 13 }}>Position</span>
+                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.position}</span>
+                </div>
+              </div>
+              <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={() => setViewModal({ show: false, employee: null })}
+                  style={{ padding: '9px 24px', borderRadius: 8, background: '#f3f4f6', color: '#374151', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </AppShell>
   )

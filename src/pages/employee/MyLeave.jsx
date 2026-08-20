@@ -68,8 +68,8 @@ export default function MyLeave() {
   // Calculate stats dynamically for cards
   const renderedBalances = leaveTypes.map(lt => {
     const balRecord = balances.find(b => b.leave_type_id === lt.id)
-    const balanceVal = balRecord ? parseFloat(balRecord.balance) : 15.0
-    const totalDays = 15.0
+    const totalDays = parseFloat(lt.days_allowed || 15.0)
+    const balanceVal = balRecord ? parseFloat(balRecord.balance) : totalDays
     const usedDays = totalDays - balanceVal
 
     let color = '#57B9FF'
@@ -80,6 +80,9 @@ export default function MyLeave() {
     } else if (lt.name.toLowerCase().includes('casual')) {
       color = '#f59e0b'
       bg = '#fef3c7'
+    } else if (lt.name.toLowerCase().includes('emergency')) {
+      color = '#ef4444'
+      bg = '#fee2e2'
     }
 
     return {
