@@ -64,7 +64,7 @@ function Sidebar({ role }) {
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
         {navItems.map(item => {
           const isActive = location.pathname === item.path ||
-            (item.path !== '/app/dashboard' && location.pathname.startsWith(item.path))
+            (item.path !== '/app/dashboard' && location.pathname.startsWith(item.path + '/'))
           return (
             <button
               key={item.path}
