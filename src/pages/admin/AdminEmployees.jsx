@@ -1,23 +1,15 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import AppShell from '../../components/layout/AppShell.jsx'
 import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
-import { card } from '../../components/ui/styles.js'
 import { SearchIcon } from '../../components/ui/Icons.jsx'
 import api from '../../services/api.js'
 
-const mockEmployees = [
-  { id: 1, name: 'John Admin',   email: 'john.admin@acme-corp.com',  dept: 'Engineering',    position: 'CEO',              role: 'Org Admin', status: 'Active',   employee_id: 'ADM-001' },
-  { id: 2, name: 'Aisha Khan',   email: 'aisha@acme-corp.com',       dept: 'Engineering',    position: 'Senior Developer', role: 'Employee',  status: 'Active',   employee_id: 'EMP-001' },
-  { id: 3, name: 'Rohan Mehta',  email: 'rohan@acme-corp.com',       dept: 'Engineering',    position: 'Junior Developer', role: 'Employee',  status: 'Active',   employee_id: 'EMP-002' },
-  { id: 4, name: 'Sara Ahmed',   email: 'sara@acme-corp.com',        dept: 'Human Resources',position: 'HR Director',      role: 'HR Manager',status: 'Active',   employee_id: 'HR-001'  },
-  { id: 5, name: 'James Wilson', email: 'james@acme-corp.com',       dept: 'Finance',        position: 'CTO',              role: 'Employee',  status: 'Inactive', employee_id: 'EMP-003' },
-]
-
-const depts = ['All', 'Engineering', 'Human Resources', 'Finance']
+const depts = ['All', 'General', 'Engineering', 'Marketing', 'Sales', 'Design', 'Operations']
 
 export default function AdminEmployees() {
   const [employees, setEmployees] = useState([])
+  const [positionsList, setPositionsList] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [deptFilter, setDeptFilter] = useState('All')
@@ -26,23 +18,29 @@ export default function AdminEmployees() {
   const [inviteSuccess, setInviteSuccess] = useState('')
   const [inviteError, setInviteError] = useState('')
   const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '',
+    first_name: '', last_name: '', email: '', employee_id: '', department: '', position_id: '',
   })
 
   const fetchEmployees = () => {
-    api.get('/org/employees')
-      .then(res => {
-        const formatted = res.data.data.employees.map(emp => ({
+    setLoading(true)
+    Promise.all([
+      api.get('/org/employees'),
+      api.get('/admin/org-structure/positions').catch(() => ({ data: [] })),
+    ])
+      .then(([empRes, posRes]) => {
+        const formatted = (empRes.data?.data?.employees || []).map(emp => ({
           id: emp.id,
           name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim(),
           email: emp.email,
           dept: emp.department || 'General',
           position: emp.primary_position ? emp.primary_position.title : 'No Position',
+          position_id: emp.primary_position ? emp.primary_position.id : '',
           role: emp.role || 'Employee',
           status: emp.is_active ? 'Active' : 'Inactive',
           employee_id: emp.employee_id || '—'
         }))
         setEmployees(formatted)
+        setPositionsList(posRes.data || [])
         setLoading(false)
       })
       .catch(err => {
@@ -64,7 +62,7 @@ export default function AdminEmployees() {
 
   const [viewModal, setViewModal] = useState({ show: false, employee: null })
   const [editModal, setEditModal] = useState({ show: false, employee: null })
-  const [editForm, setEditForm] = useState({ first_name: '', last_name: '', employee_id: '', is_active: true })
+  const [editForm, setEditForm] = useState({ first_name: '', last_name: '', employee_id: '', position_id: '', is_active: true })
   const [updating, setUpdating] = useState(false)
 
   const openEditModal = (emp) => {
@@ -73,6 +71,7 @@ export default function AdminEmployees() {
       first_name: names[0] || '',
       last_name: names.slice(1).join(' ') || '',
       employee_id: emp.employee_id === '—' ? '' : emp.employee_id,
+      position_id: emp.position_id || '',
       is_active: emp.status === 'Active'
     })
     setEditModal({ show: true, employee: emp })
@@ -84,6 +83,8 @@ export default function AdminEmployees() {
     try {
       await api.patch(`/org/employees/${editModal.employee.id}`, editForm)
       setEditModal({ show: false, employee: null })
+      setInviteSuccess('Employee updated successfully!')
+      setTimeout(() => setInviteSuccess(''), 4000)
       fetchEmployees()
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update employee')
@@ -107,7 +108,7 @@ export default function AdminEmployees() {
         invite_link: inviteData.invite_link
       })
       setShowModal(false)
-      setForm({ first_name: '', last_name: '', email: '', employee_id: '', department: '', position_title: '' })
+      setForm({ first_name: '', last_name: '', email: '', employee_id: '', department: '', position_id: '' })
       fetchEmployees()
     } catch (err) {
       setInviteError(err.response?.data?.message || 'Failed to send invitation')
@@ -203,7 +204,19 @@ export default function AdminEmployees() {
                       </td>
                       <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.email}</td>
                       <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.dept}</td>
-                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.position}</td>
+                      <td style={{ padding: '14px 20px', whiteSpace: 'nowrap' }}>
+                        <span style={{
+                          fontSize: 12,
+                          padding: '3px 10px',
+                          borderRadius: 20,
+                          fontWeight: 500,
+                          background: emp.position === 'No Position' ? '#FFFBEB' : '#F1F5F9',
+                          color: emp.position === 'No Position' ? '#D97706' : '#334155',
+                          border: `1px solid ${emp.position === 'No Position' ? '#FDE68A' : '#E2E8F0'}`
+                        }}>
+                          {emp.position}
+                        </span>
+                      </td>
                       <td style={{ padding: '14px 20px' }}>
                         <span style={{ fontSize: 12, background: '#EAF6FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 500, whiteSpace: 'nowrap' }}>{emp.role}</span>
                       </td>
@@ -254,7 +267,7 @@ export default function AdminEmployees() {
           </div>
         )}
 
-        {/* Invite Modal */}
+        {/* Invite Employee Modal */}
         {showModal && (
           <div style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
@@ -262,11 +275,11 @@ export default function AdminEmployees() {
           }}
             onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}
           >
-            <div style={{ background: '#fff', borderRadius: 16, width: 600, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
-              <div style={{ background: '#1677B8', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h2 style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0 }}>Invite Employee</h2>
+            <div style={{ background: '#fff', borderRadius: 16, width: 520, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+              <div style={{ background: '#f9fafb', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb' }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: '#172B3A', margin: 0 }}>Invite New Employee</h2>
                 <button onClick={() => setShowModal(false)}
-                  style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', color: '#fff', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   ×
                 </button>
               </div>
@@ -299,13 +312,28 @@ export default function AdminEmployees() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div>
                       <label style={formLabel}>Department</label>
-                      <input value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
-                        placeholder="e.g. Engineering" style={formInput} />
+                      <select value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
+                        style={{ ...formInput, cursor: 'pointer' }}>
+                        <option value="">General</option>
+                        {depts.filter(d => d !== 'All').map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
-                      <label style={formLabel}>Position Title</label>
-                      <input value={form.position_title} onChange={e => setForm(f => ({ ...f, position_title: e.target.value }))}
-                        placeholder="e.g. Backend Developer" style={formInput} />
+                      <label style={formLabel}>Hierarchy Position</label>
+                      <select
+                        value={form.position_id}
+                        onChange={e => setForm(f => ({ ...f, position_id: e.target.value }))}
+                        style={{ ...formInput, cursor: 'pointer' }}
+                      >
+                        <option value="">None (Unassigned)</option>
+                        {positionsList.map(pos => (
+                          <option key={pos.id} value={pos.id}>
+                            {pos.title}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   <div style={{ background: '#f0f9ff', borderRadius: 8, padding: '12px 14px', fontSize: 13, color: '#0369a1', border: '1px solid #bae6fd' }}>
@@ -327,7 +355,7 @@ export default function AdminEmployees() {
           </div>
         )}
 
-        {/* Edit Modal */}
+        {/* Edit Employee Modal */}
         {editModal.show && (
           <div style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
@@ -335,7 +363,7 @@ export default function AdminEmployees() {
           }}
             onClick={e => { if (e.target === e.currentTarget) setEditModal({ show: false, employee: null }) }}
           >
-            <div style={{ background: '#fff', borderRadius: 16, width: 500, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+            <div style={{ background: '#fff', borderRadius: 16, width: 520, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
               <div style={{ background: '#f9fafb', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb' }}>
                 <h2 style={{ fontSize: 16, fontWeight: 700, color: '#172B3A', margin: 0 }}>Edit Employee</h2>
                 <button onClick={() => setEditModal({ show: false, employee: null })}
@@ -362,7 +390,25 @@ export default function AdminEmployees() {
                     <input value={editForm.employee_id} onChange={e => setEditForm(f => ({ ...f, employee_id: e.target.value }))}
                       placeholder="e.g. EMP-001" style={{ ...formInput, fontFamily: 'monospace' }} required />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '12px 16px', background: editForm.is_active ? '#f0fdf4' : '#fef2f2', border: `1px solid ${editForm.is_active ? '#bbf7d0' : '#fecaca'}`, borderRadius: 8 }}>
+                  <div>
+                    <label style={formLabel}>Assigned Hierarchy Position</label>
+                    <select
+                      value={editForm.position_id}
+                      onChange={e => setEditForm(f => ({ ...f, position_id: e.target.value }))}
+                      style={{ ...formInput, cursor: 'pointer' }}
+                    >
+                      <option value="">None (Unassigned)</option>
+                      {positionsList.map(pos => (
+                        <option key={pos.id} value={pos.id}>
+                          {pos.title}
+                        </option>
+                      ))}
+                    </select>
+                    <p style={{ fontSize: 11, color: '#64748B', margin: '4px 0 0' }}>
+                      Assigning a position links this employee into the organization's reporting and leave approval hierarchy.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, padding: '12px 16px', background: editForm.is_active ? '#f0fdf4' : '#fef2f2', border: `1px solid ${editForm.is_active ? '#bbf7d0' : '#fecaca'}`, borderRadius: 8 }}>
                     <input 
                       type="checkbox" 
                       id="isActiveToggle" 
@@ -398,7 +444,7 @@ export default function AdminEmployees() {
           }}
             onClick={e => { if (e.target === e.currentTarget) setViewModal({ show: false, employee: null }) }}
           >
-            <div style={{ background: '#fff', borderRadius: 16, width: 400, maxWidth: '90vw', padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: '#fff', borderRadius: 16, width: 420, maxWidth: '90vw', padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
                 <Avatar name={viewModal.employee.name} size={64} bgColor="#1677B8" />
                 <div>
@@ -409,7 +455,7 @@ export default function AdminEmployees() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
                   <span style={{ color: '#6b7280', fontSize: 13 }}>Employee ID</span>
-                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.employee_id}</span>
+                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{viewModal.employee.employee_id}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
                   <span style={{ color: '#6b7280', fontSize: 13 }}>Email</span>
@@ -425,7 +471,13 @@ export default function AdminEmployees() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
                   <span style={{ color: '#6b7280', fontSize: 13 }}>Position</span>
-                  <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 500 }}>{viewModal.employee.position}</span>
+                  <span style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: viewModal.employee.position === 'No Position' ? '#D97706' : '#1677B8'
+                  }}>
+                    {viewModal.employee.position}
+                  </span>
                 </div>
               </div>
               <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
