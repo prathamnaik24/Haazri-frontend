@@ -163,62 +163,64 @@ export default function AdminEmployees() {
           </div>
 
           {/* Table */}
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#f9fafb' }}>
-                {['Name', 'Employee ID', 'Email', 'Department', 'Position', 'Role', 'Status', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '11px 20px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#374151', borderBottom: '1px solid #f3f4f6' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
-                    Loading employees...
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
+              <thead>
+                <tr style={{ background: '#f9fafb' }}>
+                  {['Name', 'Employee ID', 'Email', 'Department', 'Position', 'Role', 'Status', 'Actions'].map(h => (
+                    <th key={h} style={{ padding: '11px 20px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#374151', borderBottom: '1px solid #f3f4f6' }}>{h}</th>
+                  ))}
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
-                    No employees found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((emp, i) => (
-                  <tr key={emp.id}
-                    style={{ borderBottom: '1px solid #f9fafb' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
-                    onMouseLeave={e => e.currentTarget.style.background = ''}
-                  >
-                    <td style={{ padding: '14px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Avatar name={emp.name} size={34} bgColor={avatarColor(i)} />
-                        <span style={{ fontSize: 13, fontWeight: 500, color: '#172B3A' }}>{emp.name}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <span style={{ fontSize: 12, background: '#EBF4FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>{emp.employee_id}</span>
-                    </td>
-                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.email}</td>
-                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.dept}</td>
-                    <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280' }}>{emp.position}</td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <span style={{ fontSize: 12, background: '#EAF6FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 500 }}>{emp.role}</span>
-                    </td>
-                    <td style={{ padding: '14px 20px' }}><Badge status={emp.status} /></td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => setViewModal({ show: true, employee: emp })} title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
-                        <button onClick={() => openEditModal(emp)} title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
-                        <button onClick={() => handleResendInvite(emp.id)} title="Resend Invite" style={{ background: '#fef3c7', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#d97706', cursor: 'pointer', fontWeight: 500 }}>Resend</button>
-                      </div>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                      Loading employees...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                      No employees found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((emp, i) => (
+                    <tr key={emp.id}
+                      style={{ borderBottom: '1px solid #f9fafb' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+                      onMouseLeave={e => e.currentTarget.style.background = ''}
+                    >
+                      <td style={{ padding: '14px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <Avatar name={emp.name} size={34} bgColor={avatarColor(i)} />
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#172B3A', whiteSpace: 'nowrap' }}>{emp.name}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: 12, background: '#EBF4FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{emp.employee_id}</span>
+                      </td>
+                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.email}</td>
+                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.dept}</td>
+                      <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.position}</td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: 12, background: '#EAF6FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 500, whiteSpace: 'nowrap' }}>{emp.role}</span>
+                      </td>
+                      <td style={{ padding: '14px 20px', whiteSpace: 'nowrap' }}><Badge status={emp.status} /></td>
+                      <td style={{ padding: '14px 20px', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button onClick={() => setViewModal({ show: true, employee: emp })} title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
+                          <button onClick={() => openEditModal(emp)} title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
+                          <button onClick={() => handleResendInvite(emp.id)} title="Resend Invite" style={{ background: '#fef3c7', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#d97706', cursor: 'pointer', fontWeight: 500 }}>Resend</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Invite Result Modal (Fallback Link) */}
