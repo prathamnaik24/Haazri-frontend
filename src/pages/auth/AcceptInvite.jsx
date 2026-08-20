@@ -73,7 +73,7 @@ export default function AcceptInvite() {
               <path d="M8 15 L15 8 L22 15 L15 12 Z" fill="white" opacity="0.9" />
               <path d="M8 15 L15 22 L22 15 L15 18 Z" fill="white" opacity="0.6" />
             </svg>
-            <span style={{ fontWeight: 700, fontSize: 22, color: '#172B3A', letterSpacing: '-0.02em' }}>Burraa</span>
+            <span style={{ fontWeight: 700, fontSize: 22, color: '#172B3A', letterSpacing: '-0.02em' }}>Haazri</span>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export default function AcceptInvite() {
                 {step === 'verify' && (
                   <div>
                     <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 20, lineHeight: 1.6 }}>
-                      You've been invited to join your organization on Burraa.
+                      You've been invited to join your organization on Haazri.
                       Paste your invitation token below, or use the link from your email.
                     </div>
                     <div style={{ marginBottom: 20 }}>

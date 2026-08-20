@@ -57,7 +57,7 @@ function Sidebar({ role }) {
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px 20px' }}>
         <BurraaLogo />
-        <span style={{ fontWeight: 700, fontSize: 18, color: '#FFFFFF', letterSpacing: '-0.02em' }}>Burraa</span>
+        <span style={{ fontWeight: 700, fontSize: 18, color: '#FFFFFF', letterSpacing: '-0.02em' }}>Haazri</span>
       </div>
 
       {/* Nav */}

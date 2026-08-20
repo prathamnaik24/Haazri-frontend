@@ -112,7 +112,7 @@ export default function EmployeeLogin() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginTop: 28, marginBottom: 0 }}>
-          Powered by <span style={{ fontWeight: 600, color: '#517891' }}>Burraa</span>
+          Powered by <span style={{ fontWeight: 600, color: '#517891' }}>Haazri</span>
         </p>
       </div>
     </div>

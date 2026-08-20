@@ -218,7 +218,7 @@ export default function OrgRegister() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginTop: 24 }}>
-          Powered by <span style={{ color: '#517891', fontWeight: 600 }}>Burraa</span>
+          Powered by <span style={{ color: '#517891', fontWeight: 600 }}>Haazri</span>
         </p>
       </div>
     </div>

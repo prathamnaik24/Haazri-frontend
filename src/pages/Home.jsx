@@ -86,7 +86,7 @@ export default function Home() {
 
       {/* Footer */}
       <p style={{ color: '#9ca3af', fontSize: 12, marginTop: 48 }}>
-        Powered by <span style={{ color: '#517891', fontWeight: 600 }}>Burraa</span>
+        Powered by <span style={{ color: '#517891', fontWeight: 600 }}>Haazri</span>
       </p>
     </div>
   )
