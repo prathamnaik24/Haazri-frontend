@@ -25,6 +25,27 @@ function CheckInWidget({ user }) {
   const [startTime, setStartTime] = useState(null)
 
   useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await api.get('/attendance/me?limit=1')
+        const logs = res.data.data.history
+        if (logs.length > 0) {
+          const lastLog = logs[0]
+          const todayStr = new Date().toISOString().split('T')[0]
+          const logDateStr = new Date(lastLog.work_date).toISOString().split('T')[0]
+          if (logDateStr === todayStr && !lastLog.check_out_time) {
+            setCheckedIn(true)
+            setStartTime(new Date(lastLog.check_in_time))
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch check-in status:', err)
+      }
+    }
+    fetchStatus()
+  }, [])
+
+  useEffect(() => {
     const tick = () => {
       const now = new Date()
       setTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
@@ -47,9 +68,8 @@ function CheckInWidget({ user }) {
       await api.post('/attendance/check-in', {})
       setCheckedIn(true)
       setStartTime(new Date())
-    } catch {
-      setCheckedIn(true)
-      setStartTime(new Date())
+    } catch (err) {
+      alert(err.response?.data?.message || 'Check-in failed')
     } finally {
       setLoading(false)
     }
@@ -62,8 +82,8 @@ function CheckInWidget({ user }) {
       setCheckedIn(false)
       setStartTime(null)
       setElapsed('00:00:00')
-    } catch {
-      setCheckedIn(false)
+    } catch (err) {
+      alert(err.response?.data?.message || 'Check-out failed')
     } finally {
       setLoading(false)
     }
@@ -119,19 +139,26 @@ export default function EmployeeDashboard() {
   const user = getUserFromToken()
   const [leaveTypes, setLeaveTypes] = useState([])
   const [balances, setBalances] = useState([])
+  const [attendance, setAttendance] = useState([])
+  const [loadingHistory, setLoadingHistory] = useState(true)
 
   useEffect(() => {
-    async function loadLeaves() {
+    async function loadData() {
       try {
         const typesRes = await api.get('/leaves/types')
         const meRes = await api.get('/leaves/me')
         setLeaveTypes(typesRes.data.data)
         setBalances(meRes.data.data.balances)
+
+        const attRes = await api.get('/attendance/me?limit=5')
+        setAttendance(attRes.data.data.history)
       } catch (err) {
-        console.error('Failed to load leaves:', err)
+        console.error('Failed to load dashboard data:', err)
+      } finally {
+        setLoadingHistory(false)
       }
     }
-    loadLeaves()
+    loadData()
   }, [])
 
   const renderedBalances = leaveTypes.map(lt => {
@@ -190,7 +217,7 @@ export default function EmployeeDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <h2 style={cardTitle}>Recent Attendance</h2>
             <span style={{ fontSize: 12, color: '#526B7A', display: 'flex', alignItems: 'center' }}>
-              <CalendarIcon />Last 7 days
+              <CalendarIcon />Last 5 days
             </span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -202,15 +229,36 @@ export default function EmployeeDashboard() {
               </tr>
             </thead>
             <tbody>
-              {mockAttendance.map((row, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #f9fafb' }}>
-                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#374151', fontWeight: 500 }}>{row.date}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#22c55e', fontWeight: 500 }}>{row.checkIn}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#ef4444', fontWeight: 500 }}>{row.checkOut}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 13, color: '#374151', fontWeight: 600 }}>{row.hours}</td>
-                  <td style={{ padding: '12px 16px' }}><Badge status={row.status} /></td>
+              {loadingHistory ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: 13 }}>
+                    Loading recent attendance...
+                  </td>
                 </tr>
-              ))}
+              ) : attendance.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: 13 }}>
+                    No check-in logs found.
+                  </td>
+                </tr>
+              ) : (
+                attendance.map((row) => {
+                  const checkInStr = row.check_in_time ? new Date(row.check_in_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'
+                  const checkOutStr = row.check_out_time ? new Date(row.check_out_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'
+                  const hours = row.metadata?.total_hours ? `${row.metadata.total_hours}h` : '—'
+                  return (
+                    <tr key={row.id} style={{ borderBottom: '1px solid #f9fafb' }}>
+                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#374151', fontWeight: 500 }}>
+                        {new Date(row.work_date).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#22c55e', fontWeight: 500 }}>{checkInStr}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#ef4444', fontWeight: 500 }}>{checkOutStr}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#374151', fontWeight: 600 }}>{hours}</td>
+                      <td style={{ padding: '12px 16px' }}><Badge status={row.status} /></td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
