@@ -9,49 +9,91 @@ export default function Profile() {
   const tokenUser = getUserFromToken()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState('')
-  const [error, setError] = useState('')
+  
+  // Profile form state
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [profileSuccess, setProfileSuccess] = useState('')
+  const [profileError, setProfileError] = useState('')
+
+  // Password form state
   const [pwForm, setPwForm] = useState({ current: '', newPw: '', confirm: '' })
+  const [savingPw, setSavingPw] = useState(false)
   const [pwError, setPwError] = useState('')
   const [pwSuccess, setPwSuccess] = useState('')
 
-  useEffect(() => {
+  const fetchProfile = () => {
     api.get('/auth/me')
-      .then(res => setProfile(res.data.data.user))
-      .catch(() => setProfile({ ...tokenUser, email: tokenUser?.email || '' }))
+      .then(res => {
+        const user = res.data?.data?.user || {}
+        setProfile(user)
+        setFirstName(user.first_name || '')
+        setLastName(user.last_name || '')
+      })
+      .catch(() => {
+        const fallback = tokenUser || {}
+        setProfile(fallback)
+        setFirstName(fallback.first_name || '')
+        setLastName(fallback.last_name || '')
+      })
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchProfile()
   }, [])
 
-  const handleSave = async (e) => {
+  // ── Save Profile Details ──
+  const handleSaveProfile = async (e) => {
     e.preventDefault()
-    setSaving(true)
-    setError('')
+    setSavingProfile(true)
+    setProfileError('')
+    setProfileSuccess('')
     try {
-      // Profile update endpoint (to be implemented)
-      setSuccess('Profile updated successfully!')
-      setTimeout(() => setSuccess(''), 3000)
+      const res = await api.patch('/auth/profile', {
+        first_name: firstName,
+        last_name: lastName,
+      })
+      setProfileSuccess(res.data?.message || 'Profile updated successfully!')
+      setTimeout(() => setProfileSuccess(''), 4000)
+      fetchProfile()
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile')
+      setProfileError(err.response?.data?.message || 'Failed to update profile.')
     } finally {
-      setSaving(false)
+      setSavingProfile(false)
     }
   }
 
+  // ── Change Password ──
   const handlePasswordChange = async (e) => {
     e.preventDefault()
     setPwError('')
+    setPwSuccess('')
+
     if (pwForm.newPw !== pwForm.confirm) {
-      setPwError('New passwords do not match')
+      setPwError('New passwords do not match.')
       return
     }
     if (pwForm.newPw.length < 8) {
-      setPwError('Password must be at least 8 characters')
+      setPwError('New password must be at least 8 characters long.')
       return
     }
-    setPwSuccess('Password changed successfully!')
-    setPwForm({ current: '', newPw: '', confirm: '' })
-    setTimeout(() => setPwSuccess(''), 3000)
+
+    setSavingPw(true)
+    try {
+      const res = await api.post('/auth/change-password', {
+        currentPassword: pwForm.current,
+        newPassword: pwForm.newPw,
+      })
+      setPwSuccess(res.data?.message || 'Password changed successfully!')
+      setPwForm({ current: '', newPw: '', confirm: '' })
+      setTimeout(() => setPwSuccess(''), 4000)
+    } catch (err) {
+      setPwError(err.response?.data?.message || 'Failed to change password. Please verify your current password.')
+    } finally {
+      setSavingPw(false)
+    }
   }
 
   const displayName = profile
@@ -70,56 +112,65 @@ export default function Profile() {
             <div>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#172B3A' }}>{displayName}</div>
               <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 3 }}>{profile?.email || tokenUser?.email || ''}</div>
-              <div style={{ marginTop: 6 }}>
+              <div style={{ marginTop: 6, display: 'flex', gap: 8 }}>
                 <span style={{ fontSize: 12, background: '#EAF6FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>
                   {tokenUser?.type === 'org_admin' ? 'Org Admin' : (tokenUser?.roles?.[0] || 'Employee')}
                 </span>
+                {profile?.employee_id && (
+                  <span style={{ fontSize: 12, background: '#F1F5F9', color: '#475569', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>
+                    ID: {profile.employee_id}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          {success && (
+          {profileSuccess && (
             <div style={{ background: '#d1fae5', border: '1px solid #86efac', color: '#15803d', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
-              {success}
+              ✓ {profileSuccess}
             </div>
           )}
-          {error && (
+          {profileError && (
             <div style={{ background: '#fee2e2', color: '#dc2626', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
-              {error}
+              {profileError}
             </div>
           )}
 
-          <form onSubmit={handleSave}>
+          <form onSubmit={handleSaveProfile}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={formLabel}>First Name</label>
                 <input
-                  defaultValue={profile?.first_name || ''}
+                  value={firstName}
+                  onChange={e => setFirstName(e.target.value)}
                   style={formInput}
                   placeholder="First name"
+                  required
                 />
               </div>
               <div>
                 <label style={formLabel}>Last Name</label>
                 <input
-                  defaultValue={profile?.last_name || ''}
+                  value={lastName}
+                  onChange={e => setLastName(e.target.value)}
                   style={formInput}
                   placeholder="Last name"
+                  required
                 />
               </div>
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={formLabel}>Email Address</label>
               <input
-                defaultValue={profile?.email || tokenUser?.email || ''}
-                style={{ ...formInput, background: '#f9fafb', color: '#9ca3af' }}
+                value={profile?.email || tokenUser?.email || ''}
+                style={{ ...formInput, background: '#f9fafb', color: '#9ca3af', cursor: 'not-allowed' }}
                 disabled
-                title="Email cannot be changed"
+                title="Email address cannot be changed"
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" disabled={saving} style={primaryBtn}>
-                {saving ? 'Saving...' : 'Save Changes'}
+              <button type="submit" disabled={savingProfile} style={primaryBtn}>
+                {savingProfile ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>
@@ -130,7 +181,7 @@ export default function Profile() {
           <h2 style={{ ...cardTitle, marginBottom: 20 }}>Change Password</h2>
           {pwSuccess && (
             <div style={{ background: '#d1fae5', border: '1px solid #86efac', color: '#15803d', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
-              {pwSuccess}
+              ✓ {pwSuccess}
             </div>
           )}
           {pwError && (
@@ -177,7 +228,9 @@ export default function Profile() {
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-              <button type="submit" style={primaryBtn}>Update Password</button>
+              <button type="submit" disabled={savingPw} style={primaryBtn}>
+                {savingPw ? 'Updating...' : 'Update Password'}
+              </button>
             </div>
           </form>
         </div>
