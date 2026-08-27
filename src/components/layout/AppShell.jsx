@@ -3,6 +3,7 @@ import {
   BurraaLogo, DashboardIcon, AttendanceIcon, LeaveIcon, TeamIcon,
   ApprovalIcon, EmployeesIcon, OrgIcon, ReportsIcon, AuditIcon,
   RolesIcon, ProfileIcon, LogoutIcon, SearchIcon, BellIcon, UserAvatarSvg,
+  FinanceIcon, HRIcon,
 } from '../ui/Icons.jsx'
 import { getUserFromToken, getUserRole, logout } from '../../utils/auth.js'
 
@@ -12,6 +13,7 @@ const NAV_CONFIG = {
     { path: '/app/dashboard',    label: 'Dashboard',     Icon: DashboardIcon },
     { path: '/app/attendance',   label: 'My Attendance', Icon: AttendanceIcon },
     { path: '/app/leave',        label: 'My Leave',      Icon: LeaveIcon },
+    { path: '/app/finance',      label: 'My Payslips',   Icon: FinanceIcon },
     { path: '/app/profile',      label: 'Profile',       Icon: ProfileIcon },
   ],
   manager: [
@@ -20,6 +22,8 @@ const NAV_CONFIG = {
     { path: '/app/leave',          label: 'My Leave',        Icon: LeaveIcon },
     { path: '/app/team-attendance',label: 'Team Attendance', Icon: TeamIcon },
     { path: '/app/leave-approvals',label: 'Leave Approvals', Icon: ApprovalIcon },
+    { path: '/app/hr-leaves',      label: 'HR Leaves',       Icon: HRIcon },
+    { path: '/app/finance',        label: 'My Payslips',     Icon: FinanceIcon },
     { path: '/app/profile',        label: 'Profile',         Icon: ProfileIcon },
   ],
   org_admin: [
@@ -29,8 +33,10 @@ const NAV_CONFIG = {
     { path: '/app/attendance',   label: 'Attendance',         Icon: AttendanceIcon },
     { path: '/app/leave',        label: 'My Leave',           Icon: LeaveIcon },
     { path: '/app/leave-approvals',label: 'Leave Approvals',  Icon: ApprovalIcon },
+    { path: '/app/hr-leaves',    label: 'HR Leaves',          Icon: HRIcon },
+    { path: '/app/finance',      label: 'Finance & Payroll',  Icon: FinanceIcon },
     { path: '/app/roles',        label: 'Roles & Permissions',Icon: RolesIcon },
-    { path: '/app/reports',      label: 'Reports',            Icon: ReportsIcon },
+    { path: '/app/reports',      label: 'Reports & Schedule', Icon: ReportsIcon },
     { path: '/app/audit-logs',   label: 'Audit Logs',         Icon: AuditIcon },
     { path: '/app/profile',      label: 'Profile',            Icon: ProfileIcon },
   ],

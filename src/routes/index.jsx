@@ -25,6 +25,10 @@ import RolesPermissions from '../pages/admin/RolesPermissions'
 import Reports from '../pages/admin/Reports'
 import AuditLogs from '../pages/admin/AuditLogs'
 
+// Finance and HR pages
+import FinancePage from '../pages/finance/FinancePage'
+import HRLeaves from '../pages/hr/HRLeaves'
+
 // Shared pages
 import Profile from '../pages/Profile'
 import AcceptInvite from '../pages/auth/AcceptInvite'
@@ -71,12 +75,14 @@ export const router = createBrowserRouter([
   { path: '/app/team-attendance', element: <TeamAttendance /> },
   { path: '/app/leave-approvals', element: <LeaveApprovals /> },
 
-  // Admin
+  // Admin & Manager extended
   { path: '/app/employees',       element: <AdminEmployees /> },
   { path: '/app/org-structure',   element: <OrgStructure /> },
   { path: '/app/roles',           element: <RolesPermissions /> },
   { path: '/app/reports',         element: <Reports /> },
   { path: '/app/audit-logs',      element: <AuditLogs /> },
+  { path: '/app/hr-leaves',       element: <HRLeaves /> },
+  { path: '/app/finance',         element: <FinancePage /> },
 
   // Shared
   { path: '/app/profile',         element: <Profile /> },
@@ -95,5 +101,7 @@ export const router = createBrowserRouter([
   { path: '/ui/team-attendance',  element: <TeamAttendance /> },
   { path: '/ui/my-attendance',    element: <MyAttendance /> },
   { path: '/ui/my-leave',         element: <MyLeave /> },
+  { path: '/ui/finance',          element: <FinancePage /> },
+  { path: '/ui/hr-leaves',        element: <HRLeaves /> },
   { path: '/ui/profile',          element: <Profile /> },
 ])
