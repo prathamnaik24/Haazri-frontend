@@ -46,17 +46,20 @@ export default function FinancePage() {
         if (filterPerson) params.append('person_id', filterPerson)
 
         const res = await api.get(`/finance/records?${params.toString()}`)
-        setRecords(res.data?.data || [])
+        const recData = res.data?.data
+        setRecords(Array.isArray(recData) ? recData : [])
       } else {
         const params = new URLSearchParams()
         if (filterType) params.append('record_type', filterType)
         if (filterYear) params.append('period_year', filterYear)
 
         const res = await api.get(`/finance/records/me?${params.toString()}`)
-        setRecords(res.data?.data || [])
+        const recData = res.data?.data
+        setRecords(Array.isArray(recData) ? recData : [])
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch financial records')
+      setRecords([])
     } finally {
       setLoading(false)
     }
@@ -66,9 +69,11 @@ export default function FinancePage() {
     if (!isPrivileged) return
     try {
       const res = await api.get('/org/employees')
-      setEmployees(res.data?.data || [])
+      const empData = res.data?.data?.employees || res.data?.data || []
+      setEmployees(Array.isArray(empData) ? empData : [])
     } catch (err) {
       console.error('Failed to load employees for finance dropdown:', err)
+      setEmployees([])
     }
   }
 
@@ -112,10 +117,11 @@ export default function FinancePage() {
   }
 
   // Aggregate stats
-  const totalAmount = records.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
-  const salarySum = records.filter(r => r.record_type === 'SALARY').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
-  const bonusSum = records.filter(r => r.record_type === 'BONUS').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
-  const deductionSum = records.filter(r => r.record_type === 'DEDUCTION').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
+  const safeRecords = Array.isArray(records) ? records : []
+  const totalAmount = safeRecords.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
+  const salarySum = safeRecords.filter(r => r.record_type === 'SALARY').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
+  const bonusSum = safeRecords.filter(r => r.record_type === 'BONUS').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
+  const deductionSum = safeRecords.filter(r => r.record_type === 'DEDUCTION').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
 
   const badgeColors = {
     SALARY: { bg: '#EBF8FF', color: '#2B6CB0', border: '#BEE3F8' },
@@ -239,7 +245,7 @@ export default function FinancePage() {
                 style={{ padding: '8px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, background: '#FFFFFF' }}
               >
                 <option value="">All Employees</option>
-                {employees.map(emp => (
+                {(Array.isArray(employees) ? employees : []).map(emp => (
                   <option key={emp.id} value={emp.id}>
                     {emp.first_name} {emp.last_name} ({emp.email})
                   </option>
@@ -268,7 +274,7 @@ export default function FinancePage() {
             <div style={{ padding: 48, textAlign: 'center', color: '#526B7A', fontSize: 14 }}>
               Loading financial records...
             </div>
-          ) : records.length === 0 ? (
+          ) : (!Array.isArray(records) || records.length === 0) ? (
             <div style={{ padding: 48, textAlign: 'center', color: '#526B7A', fontSize: 14 }}>
               No financial records found for the selected filters.
             </div>
@@ -285,7 +291,7 @@ export default function FinancePage() {
                 </tr>
               </thead>
               <tbody>
-                {records.map((rec) => {
+                {(Array.isArray(records) ? records : []).map((rec) => {
                   const style = badgeColors[rec.record_type] || badgeColors.OTHER
                   const period = rec.period_month && rec.period_year
                     ? `${new Date(2000, rec.period_month - 1, 1).toLocaleString('default', { month: 'short' })} ${rec.period_year}`
@@ -347,7 +353,7 @@ export default function FinancePage() {
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14 }}
                   >
                     <option value="">Select an employee...</option>
-                    {employees.map(emp => (
+                    {(Array.isArray(employees) ? employees : []).map(emp => (
                       <option key={emp.id} value={emp.id}>
                         {emp.first_name} {emp.last_name} ({emp.email})
                       </option>
