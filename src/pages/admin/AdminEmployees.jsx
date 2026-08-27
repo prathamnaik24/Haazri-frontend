@@ -136,6 +136,18 @@ export default function AdminEmployees() {
     }
   }
 
+  const handleDelete = async (employee) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${employee.name}" (${employee.email})? This action cannot be undone.`)) return
+    try {
+      const res = await api.delete(`/org/employees/${employee.id}`)
+      setInviteSuccess(res.data?.message || 'Employee deleted successfully!')
+      setTimeout(() => setInviteSuccess(''), 4000)
+      fetchEmployees()
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete employee')
+    }
+  }
+
   const formLabel = { display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }
   const formInput = { width: '100%', padding: '10px 14px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, color: '#374151', outline: 'none', background: '#fff', boxSizing: 'border-box' }
 
@@ -231,6 +243,7 @@ export default function AdminEmployees() {
                           <button onClick={() => setViewModal({ show: true, employee: emp })} title="View" style={{ background: '#EAF6FF', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#1677B8', cursor: 'pointer', fontWeight: 500 }}>View</button>
                           <button onClick={() => openEditModal(emp)} title="Edit" style={{ background: '#f9fafb', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#6b7280', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
                           <button onClick={() => handleResendInvite(emp.id)} title="Resend Invite" style={{ background: '#fef3c7', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#d97706', cursor: 'pointer', fontWeight: 500 }}>Resend</button>
+                          <button onClick={() => handleDelete(emp)} title="Delete Employee" style={{ background: '#fef2f2', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: '#dc2626', cursor: 'pointer', fontWeight: 500 }}>Delete</button>
                         </div>
                       </td>
                     </tr>
