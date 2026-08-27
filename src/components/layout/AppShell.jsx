@@ -50,24 +50,24 @@ function Sidebar({ role }) {
 
   const btnBase = {
     display: 'flex', alignItems: 'center', gap: 10,
-    padding: '9px 12px', borderRadius: 8, border: 'none',
-    cursor: 'pointer', fontSize: 14, textAlign: 'left', width: '100%', transition: 'all 0.15s',
+    padding: '8px 12px', borderRadius: 8, border: 'none',
+    cursor: 'pointer', fontSize: 13.5, textAlign: 'left', width: '100%', transition: 'all 0.15s',
   }
 
   return (
     <aside style={{
       width: 220, minWidth: 220, background: '#517891',
       display: 'flex', flexDirection: 'column',
-      padding: '24px 12px', gap: 4,
+      padding: '20px 12px 16px', gap: 4, height: '100vh', boxSizing: 'border-box',
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px 12px', flexShrink: 0 }}>
         <BurraaLogo />
         <span style={{ fontWeight: 700, fontSize: 18, color: '#FFFFFF', letterSpacing: '-0.02em' }}>Haazri</span>
       </div>
 
       {/* Nav */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: 4 }}>
         {navItems.map(item => {
           const isActive = location.pathname === item.path ||
             (item.path !== '/app/dashboard' && location.pathname.startsWith(item.path + '/'))
@@ -92,14 +92,14 @@ function Sidebar({ role }) {
       </nav>
 
       {/* Logout */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 12 }}>
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10, flexShrink: 0 }}>
         <button
           onClick={logout}
-          style={{ ...btnBase, background: 'transparent', color: '#EAF6FF', fontWeight: 400 }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.color = '#FFFFFF' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#EAF6FF' }}
+          style={{ ...btnBase, background: 'rgba(0, 0, 0, 0.15)', color: '#FFFFFF', fontWeight: 600 }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#C53030'; e.currentTarget.style.color = '#FFFFFF' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.15)'; e.currentTarget.style.color = '#FFFFFF' }}
         >
-          <LogoutIcon size={16} color="#EAF6FF" />
+          <LogoutIcon size={16} color="#FFFFFF" />
           Logout
         </button>
       </div>

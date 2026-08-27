@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import AppShell from '../components/layout/AppShell.jsx'
 import { card, cardTitle, formLabel, formInput, primaryBtn } from '../components/ui/styles.js'
 import { Avatar, avatarColor } from '../components/ui/Avatar.jsx'
+import { LogoutIcon } from '../components/ui/Icons.jsx'
 import api from '../services/api.js'
-import { getUserFromToken } from '../utils/auth.js'
+import { getUserFromToken, logout } from '../utils/auth.js'
 
 export default function Profile() {
   const tokenUser = getUserFromToken()
@@ -250,6 +251,29 @@ export default function Profile() {
                 <span style={{ color: '#374151', fontFamily: 'monospace', fontSize: 12 }}>{item.value}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Sign Out Card */}
+        <div style={{ ...card, background: '#FFF5F5', border: '1px solid #FED7D7' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h2 style={{ ...cardTitle, color: '#9B2C2C', margin: 0 }}>Sign Out</h2>
+              <p style={{ fontSize: 13, color: '#742A2A', margin: '4px 0 0' }}>End your session and sign out of Haazri on this device.</p>
+            </div>
+            <button
+              onClick={logout}
+              style={{
+                background: '#E53E3E', color: '#FFFFFF', border: 'none', borderRadius: 8,
+                padding: '10px 20px', fontWeight: 600, fontSize: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#C53030'}
+              onMouseLeave={e => e.currentTarget.style.background = '#E53E3E'}
+            >
+              <LogoutIcon size={16} color="#FFFFFF" />
+              Sign Out Now
+            </button>
           </div>
         </div>
       </div>
