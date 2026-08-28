@@ -42,6 +42,9 @@ const NAV_CONFIG = {
   ],
 }
 
+NAV_CONFIG.employee.splice(3, 0, { path: '/app/org-structure', label: 'Org Structure', Icon: OrgIcon })
+NAV_CONFIG.manager.splice(3, 0, { path: '/app/org-structure', label: 'Org Structure', Icon: OrgIcon })
+
 // ─── Sidebar ───────────────────────────────────────────────────────────────
 function Sidebar({ role }) {
   const navigate = useNavigate()

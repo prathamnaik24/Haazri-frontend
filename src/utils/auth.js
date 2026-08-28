@@ -18,6 +18,21 @@ export function getUserFromToken() {
   return decodeToken(getStoredToken())
 }
 
+export function hasPermission(permission) {
+  const user = getUserFromToken()
+  if (!user) return false
+  if (Array.isArray(user.permissions)) return user.permissions.includes(permission)
+  return user.type === 'org_admin' || (user.roles || []).some(role => role.toLowerCase() === 'org admin')
+}
+
+export function canViewHierarchy() {
+  return hasPermission('view_hierarchy') || getUserRole() !== null
+}
+
+export function canManageHierarchy() {
+  return hasPermission('manage_hierarchy') || ['manager', 'org_admin'].includes(getUserRole())
+}
+
 /**
  * Returns the canonical role string used for routing and UI gating.
  *
