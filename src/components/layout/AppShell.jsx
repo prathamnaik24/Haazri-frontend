@@ -59,7 +59,11 @@ function Sidebar({ role }) {
     'subscription_management',
   ]
 
-  const rawItems = NAV_CONFIG[role] || NAV_CONFIG.employee
+  let rawItems = NAV_CONFIG[role] || NAV_CONFIG.employee
+  if (role === 'employee' && (user?.is_manager || user?.has_subordinates || (user?.position_path && user.position_path.split('.').length >= 2))) {
+    rawItems = NAV_CONFIG.manager
+  }
+
   const navItems = rawItems.filter(item => {
     if (!item.feature || role === 'org_admin') return true
     return userFeatures.includes(item.feature)

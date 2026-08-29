@@ -53,9 +53,13 @@ export function getUserRole() {
 
   if (roles.includes('org admin')) return 'org_admin'
 
-  // Supervisor / manager / HR — all get team-scoped access
-  const managerKeywords = ['manager', 'supervisor', 'hr', 'team lead', 'lead', 'head', 'director', 'chief', 'vp', 'vice president']
+  // Supervisor / manager / HR / team leads / senior positions — all get team-scoped management access
+  const managerKeywords = ['manager', 'supervisor', 'hr', 'team lead', 'lead', 'head', 'director', 'chief', 'vp', 'vice president', 'senior']
   if (roles.some(r => managerKeywords.some(kw => r.includes(kw)))) return 'manager'
+
+  if (user.is_manager || user.has_subordinates || (user.permissions && user.permissions.includes('approve_leaves'))) {
+    return 'manager'
+  }
 
   return 'employee'
 }
