@@ -24,6 +24,7 @@ import OrgStructure from '../pages/admin/OrgStructure'
 import RolesPermissions from '../pages/admin/RolesPermissions'
 import Reports from '../pages/admin/Reports'
 import AuditLogs from '../pages/admin/AuditLogs'
+import BillingPortal from '../pages/admin/BillingPortal'
 
 // Finance and HR pages
 import FinancePage from '../pages/finance/FinancePage'
@@ -83,6 +84,8 @@ export const router = createBrowserRouter([
   { path: '/app/audit-logs',      element: <AuditLogs /> },
   { path: '/app/hr-leaves',       element: <HRLeaves /> },
   { path: '/app/finance',         element: <FinancePage /> },
+  { path: '/app/billing',         element: <BillingPortal /> },
+  { path: '/billing',             element: <BillingPortal /> },
 
   // Shared
   { path: '/app/profile',         element: <Profile /> },
@@ -102,6 +105,7 @@ export const router = createBrowserRouter([
   { path: '/ui/my-attendance',    element: <MyAttendance /> },
   { path: '/ui/my-leave',         element: <MyLeave /> },
   { path: '/ui/finance',          element: <FinancePage /> },
+  { path: '/ui/billing',          element: <BillingPortal /> },
   { path: '/ui/hr-leaves',        element: <HRLeaves /> },
   { path: '/ui/profile',          element: <Profile /> },
 ])

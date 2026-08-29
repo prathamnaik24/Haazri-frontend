@@ -1,29 +1,36 @@
-import React, { useState, useEffect } from 'react'
-import AppShell from '../../components/layout/AppShell'
-import api from '../../services/api'
-import { getUserRole } from '../../utils/auth'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AppShell from '../../components/layout/AppShell';
+import api from '../../services/api';
+import { getFinanceSummary, getFinancialSnapshots, generateSnapshot } from '../../services/subscriptions';
+import { getUserRole } from '../../utils/auth';
 
-const RECORD_TYPES = ['SALARY', 'BONUS', 'DEDUCTION', 'PAYSLIP', 'OTHER']
+const RECORD_TYPES = ['SALARY', 'BONUS', 'DEDUCTION', 'PAYSLIP', 'OTHER'];
 
 export default function FinancePage() {
-  const role = getUserRole()
-  const isPrivileged = role === 'org_admin' || role === 'ceo'
+  const navigate = useNavigate();
+  const role = getUserRole();
+  const isPrivileged = role === 'org_admin' || role === 'ceo';
 
-  const [records, setRecords] = useState([])
-  const [employees, setEmployees] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [summaryData, setSummaryData] = useState(null);
+  const [snapshots, setSnapshots] = useState([]);
+  const [generatingSnapshot, setGeneratingSnapshot] = useState(false);
+
+  const [records, setRecords] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Filters
-  const [filterType, setFilterType] = useState('')
-  const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString())
-  const [filterMonth, setFilterMonth] = useState('')
-  const [filterPerson, setFilterPerson] = useState('')
+  const [filterType, setFilterType] = useState('');
+  const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
+  const [filterMonth, setFilterMonth] = useState('');
+  const [filterPerson, setFilterPerson] = useState('');
 
   // Create Modal State
-  const [showModal, setShowModal] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     person_id: '',
     record_type: 'SALARY',
@@ -32,73 +39,106 @@ export default function FinancePage() {
     period_year: new Date().getFullYear(),
     currency: 'INR',
     description: '',
-  })
+  });
 
-  const fetchRecords = async () => {
-    setLoading(true)
-    setError('')
+  const fetchSummaryAndSnapshots = async () => {
+    if (!isPrivileged) return;
     try {
-      if (isPrivileged) {
-        const params = new URLSearchParams()
-        if (filterType) params.append('record_type', filterType)
-        if (filterYear) params.append('period_year', filterYear)
-        if (filterMonth) params.append('period_month', filterMonth)
-        if (filterPerson) params.append('person_id', filterPerson)
+      const [sumRes, snapRes] = await Promise.all([
+        getFinanceSummary().catch(() => null),
+        getFinancialSnapshots().catch(() => null),
+      ]);
 
-        const res = await api.get(`/finance/records?${params.toString()}`)
-        const recData = res.data?.data
-        setRecords(Array.isArray(recData) ? recData : [])
-      } else {
-        const params = new URLSearchParams()
-        if (filterType) params.append('record_type', filterType)
-        if (filterYear) params.append('period_year', filterYear)
-
-        const res = await api.get(`/finance/records/me?${params.toString()}`)
-        const recData = res.data?.data
-        setRecords(Array.isArray(recData) ? recData : [])
+      if (sumRes && sumRes.data) {
+        setSummaryData(sumRes.data);
+      }
+      if (snapRes && snapRes.data && snapRes.data.snapshots) {
+        setSnapshots(snapRes.data.snapshots);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch financial records')
-      setRecords([])
-    } finally {
-      setLoading(false)
+      console.error('Failed to load financial summary and snapshots:', err);
     }
-  }
+  };
+
+  const fetchRecords = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (isPrivileged) {
+        const params = new URLSearchParams();
+        if (filterType) params.append('record_type', filterType);
+        if (filterYear) params.append('period_year', filterYear);
+        if (filterMonth) params.append('period_month', filterMonth);
+        if (filterPerson) params.append('person_id', filterPerson);
+
+        const res = await api.get(`/finance/records?${params.toString()}`);
+        const recData = res.data?.data;
+        setRecords(Array.isArray(recData) ? recData : []);
+      } else {
+        const params = new URLSearchParams();
+        if (filterType) params.append('record_type', filterType);
+        if (filterYear) params.append('period_year', filterYear);
+
+        const res = await api.get(`/finance/records/me?${params.toString()}`);
+        const recData = res.data?.data;
+        setRecords(Array.isArray(recData) ? recData : []);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch financial records');
+      setRecords([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchEmployees = async () => {
-    if (!isPrivileged) return
+    if (!isPrivileged) return;
     try {
-      const res = await api.get('/org/employees')
-      const empData = res.data?.data?.employees || res.data?.data || []
-      setEmployees(Array.isArray(empData) ? empData : [])
+      const res = await api.get('/org/employees');
+      const empData = res.data?.data?.employees || res.data?.data || [];
+      setEmployees(Array.isArray(empData) ? empData : []);
     } catch (err) {
-      console.error('Failed to load employees for finance dropdown:', err)
-      setEmployees([])
+      console.error('Failed to load employees for finance dropdown:', err);
+      setEmployees([]);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchRecords()
-  }, [filterType, filterYear, filterMonth, filterPerson, isPrivileged])
+    fetchRecords();
+    if (isPrivileged) {
+      fetchSummaryAndSnapshots();
+      fetchEmployees();
+    }
+  }, [filterType, filterYear, filterMonth, filterPerson, isPrivileged]);
 
-  useEffect(() => {
-    fetchEmployees()
-  }, [isPrivileged])
+  const handleGenerateSnapshot = async () => {
+    try {
+      setGeneratingSnapshot(true);
+      setError('');
+      const res = await generateSnapshot();
+      setSuccess(res.message || 'Financial snapshot generated successfully!');
+      await fetchSummaryAndSnapshots();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to generate financial snapshot');
+    } finally {
+      setGeneratingSnapshot(false);
+    }
+  };
 
   const handleCreate = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError('')
-    setSuccess('')
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    setSuccess('');
     try {
       await api.post('/finance/records', {
         ...form,
         amount: parseFloat(form.amount),
         period_month: parseInt(form.period_month, 10),
         period_year: parseInt(form.period_year, 10),
-      })
-      setSuccess('Financial record created successfully!')
-      setShowModal(false)
+      });
+      setSuccess('Financial record created successfully!');
+      setShowModal(false);
       setForm({
         person_id: '',
         record_type: 'SALARY',
@@ -107,21 +147,31 @@ export default function FinancePage() {
         period_year: new Date().getFullYear(),
         currency: 'INR',
         description: '',
-      })
-      fetchRecords()
+      });
+      fetchRecords();
+      fetchSummaryAndSnapshots();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create financial record')
+      setError(err.response?.data?.message || 'Failed to create financial record');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
   // Aggregate stats
-  const safeRecords = Array.isArray(records) ? records : []
-  const totalAmount = safeRecords.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
-  const salarySum = safeRecords.filter(r => r.record_type === 'SALARY').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
-  const bonusSum = safeRecords.filter(r => r.record_type === 'BONUS').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
-  const deductionSum = safeRecords.filter(r => r.record_type === 'DEDUCTION').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
+  const safeRecords = Array.isArray(records) ? records : [];
+  const totalAmount = safeRecords.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+  const salarySum = safeRecords.filter((r) => r.record_type === 'SALARY').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+  const bonusSum = safeRecords.filter((r) => r.record_type === 'BONUS').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+  const deductionSum = safeRecords.filter((r) => r.record_type === 'DEDUCTION').reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
 
   const badgeColors = {
     SALARY: { bg: '#EBF8FF', color: '#2B6CB0', border: '#BEE3F8' },
@@ -129,7 +179,9 @@ export default function FinancePage() {
     DEDUCTION: { bg: '#FFF5F5', color: '#9B2C2C', border: '#FED7D7' },
     PAYSLIP: { bg: '#FAF5FF', color: '#6B46C1', border: '#E9D8FD' },
     OTHER: { bg: '#EDF2F7', color: '#4A5568', border: '#CBD5E0' },
-  }
+  };
+
+  const latestSnapshot = summaryData?.latest_snapshot;
 
   return (
     <AppShell>
@@ -138,27 +190,52 @@ export default function FinancePage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: '#172B3A', margin: 0 }}>
-              {isPrivileged ? 'Financial Management' : 'My Financial Records & Payslips'}
+              {isPrivileged ? 'Company Financial Overview & Ledger' : 'My Financial Records & Payslips'}
             </h1>
             <p style={{ fontSize: 14, color: '#526B7A', margin: '4px 0 0' }}>
               {isPrivileged
-                ? 'Role-restricted financial records, compensations, bonuses, and salary ledger'
+                ? 'High-level financial summary, subscription plan capacity, periodic cost snapshots, and payroll records'
                 : 'View your official salary payouts, bonuses, and tax/deduction statements'}
             </p>
           </div>
           {isPrivileged && (
-            <button
-              onClick={() => setShowModal(true)}
-              style={{
-                background: '#517891', color: '#FFFFFF', border: 'none', borderRadius: 8,
-                padding: '10px 18px', fontWeight: 600, fontSize: 14, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#406277'}
-              onMouseLeave={e => e.currentTarget.style.background = '#517891'}
-            >
-              + Add Record
-            </button>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={handleGenerateSnapshot}
+                disabled={generatingSnapshot}
+                style={{
+                  background: '#FFFFFF', color: '#2563EB', border: '1px solid #93C5FD', borderRadius: 8,
+                  padding: '10px 16px', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {generatingSnapshot ? 'Snapshotting...' : '📸 Generate Snapshot'}
+              </button>
+
+              <button
+                onClick={() => navigate('/app/billing')}
+                style={{
+                  background: '#FFFFFF', color: '#1677B8', border: '1px solid #1677B8', borderRadius: 8,
+                  padding: '10px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                Manage Subscription
+              </button>
+
+              <button
+                onClick={() => setShowModal(true)}
+                style={{
+                  background: '#517891', color: '#FFFFFF', border: 'none', borderRadius: 8,
+                  padding: '10px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#406277')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#517891')}
+              >
+                + Add Record
+              </button>
+            </div>
           )}
         </div>
 
@@ -174,11 +251,108 @@ export default function FinancePage() {
           </div>
         )}
 
+        {/* CEO / Admin Plan & Overall Summary Card */}
+        {isPrivileged && summaryData && (
+          <div style={{
+            background: 'linear-gradient(135deg, #172B3A 0%, #2A4356 100%)',
+            borderRadius: 16, padding: 24, color: '#FFFFFF', marginBottom: 28,
+            boxShadow: '0 8px 24px rgba(23, 43, 58, 0.15)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#90D5FF' }}>
+                  Active Plan Subscription
+                </span>
+                <h2 style={{ fontSize: 26, fontWeight: 800, margin: '4px 0 0 0', color: '#FFFFFF' }}>
+                  {summaryData.current_plan?.name || 'Growth'} Plan
+                </h2>
+                <div style={{ fontSize: 13, color: '#CBD5E1', marginTop: 4 }}>
+                  Max {summaryData.current_plan?.max_employees || 100} employees allowed • Period: {formatDate(summaryData.current_period?.start)} to {formatDate(summaryData.current_period?.end)}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 24, background: 'rgba(255, 255, 255, 0.1)', padding: '12px 20px', borderRadius: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>Active Headcount</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#FFFFFF', marginTop: 2 }}>{summaryData.employee_count || 0}</div>
+                </div>
+                <div style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: 24 }}>
+                  <div style={{ fontSize: 11, color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>Total Expenditure</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#4ADE80', marginTop: 2 }}>
+                    ${((summaryData.total_expenditure_cents || 0) / 100).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Department Breakdown Section */}
+            {summaryData.department_breakdown && summaryData.department_breakdown.length > 0 && (
+              <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#E2E8F0', marginBottom: 10 }}>Department Headcount & Cost Distribution</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                  {summaryData.department_breakdown.map((dept, idx) => (
+                    <div key={idx} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '10px 14px' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#FFFFFF' }}>{dept.name}</div>
+                      <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                        {dept.employee_count} {dept.employee_count === 1 ? 'employee' : 'employees'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Phase 2: Expenditure Snapshots & Trend Timeline */}
+        {isPrivileged && snapshots.length > 0 && (
+          <div style={{
+            background: '#FFFFFF', border: '1px solid #D7E6EF', borderRadius: 12, padding: 20, marginBottom: 28,
+          }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#172B3A', margin: '0 0 14px 0' }}>
+              📈 Expenditure Snapshots & Historical Trend
+            </h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #E2E8F0', color: '#526B7A', background: '#F8FAFC' }}>
+                    <th style={{ padding: '10px 12px' }}>Snapshot Date</th>
+                    <th style={{ padding: '10px 12px' }}>Active Plan</th>
+                    <th style={{ padding: '10px 12px' }}>Employee Count</th>
+                    <th style={{ padding: '10px 12px' }}>Total Expenditure</th>
+                    <th style={{ padding: '10px 12px' }}>Department Breakdown</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {snapshots.map((snap) => {
+                    const bd = snap.department_breakdown || {};
+                    const deptCount = Object.keys(bd).length;
+
+                    return (
+                      <tr key={snap.id} style={{ borderBottom: '1px solid #EDF2F7', color: '#172B3A' }}>
+                        <td style={{ padding: '12px', fontWeight: 600 }}>{formatDate(snap.snapshot_date)}</td>
+                        <td style={{ padding: '12px' }}>{snap.metadata?.plan_name || 'Growth'}</td>
+                        <td style={{ padding: '12px' }}>{snap.metadata?.employee_count || '—'}</td>
+                        <td style={{ padding: '12px', fontWeight: 700, color: '#1677B8' }}>
+                          ${((snap.total_expenditure_cents || 0) / 100).toFixed(2)}
+                        </td>
+                        <td style={{ padding: '12px', color: '#526B7A', fontSize: 12 }}>
+                          {deptCount > 0 ? `${deptCount} departments tracked` : 'Org-wide'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* Metric Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 28 }}>
           <div style={{ background: '#FFFFFF', border: '1px solid #D7E6EF', borderRadius: 12, padding: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#526B7A', textTransform: 'uppercase' }}>
-              {isPrivileged ? 'Total Value' : 'Net Total Recorded'}
+              {isPrivileged ? 'Total Records Value' : 'Net Total Recorded'}
             </div>
             <div style={{ fontSize: 24, fontWeight: 700, color: '#172B3A', marginTop: 8 }}>
               ₹{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -208,27 +382,27 @@ export default function FinancePage() {
         <div style={{ background: '#FFFFFF', border: '1px solid #D7E6EF', borderRadius: 12, padding: 16, marginBottom: 20, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <select
             value={filterType}
-            onChange={e => setFilterType(e.target.value)}
+            onChange={(e) => setFilterType(e.target.value)}
             style={{ padding: '8px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, background: '#FFFFFF' }}
           >
             <option value="">All Types</option>
-            {RECORD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            {RECORD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
 
           <select
             value={filterYear}
-            onChange={e => setFilterYear(e.target.value)}
+            onChange={(e) => setFilterYear(e.target.value)}
             style={{ padding: '8px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, background: '#FFFFFF' }}
           >
             <option value="">All Years</option>
-            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+            {[2024, 2025, 2026, 2027].map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
 
           {isPrivileged && (
             <>
               <select
                 value={filterMonth}
-                onChange={e => setFilterMonth(e.target.value)}
+                onChange={(e) => setFilterMonth(e.target.value)}
                 style={{ padding: '8px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, background: '#FFFFFF' }}
               >
                 <option value="">All Months</option>
@@ -241,11 +415,11 @@ export default function FinancePage() {
 
               <select
                 value={filterPerson}
-                onChange={e => setFilterPerson(e.target.value)}
+                onChange={(e) => setFilterPerson(e.target.value)}
                 style={{ padding: '8px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, background: '#FFFFFF' }}
               >
                 <option value="">All Employees</option>
-                {(Array.isArray(employees) ? employees : []).map(emp => (
+                {(Array.isArray(employees) ? employees : []).map((emp) => (
                   <option key={emp.id} value={emp.id}>
                     {emp.first_name} {emp.last_name} ({emp.email})
                   </option>
@@ -257,10 +431,10 @@ export default function FinancePage() {
           <div style={{ flex: 1 }} />
           <button
             onClick={() => {
-              setFilterType('')
-              setFilterYear(new Date().getFullYear().toString())
-              setFilterMonth('')
-              setFilterPerson('')
+              setFilterType('');
+              setFilterYear(new Date().getFullYear().toString());
+              setFilterMonth('');
+              setFilterPerson('');
             }}
             style={{ background: '#EDF2F7', border: 'none', borderRadius: 6, padding: '8px 14px', fontSize: 13, cursor: 'pointer', color: '#4A5568' }}
           >
@@ -274,7 +448,7 @@ export default function FinancePage() {
             <div style={{ padding: 48, textAlign: 'center', color: '#526B7A', fontSize: 14 }}>
               Loading financial records...
             </div>
-          ) : (!Array.isArray(records) || records.length === 0) ? (
+          ) : !Array.isArray(records) || records.length === 0 ? (
             <div style={{ padding: 48, textAlign: 'center', color: '#526B7A', fontSize: 14 }}>
               No financial records found for the selected filters.
             </div>
@@ -292,10 +466,10 @@ export default function FinancePage() {
               </thead>
               <tbody>
                 {(Array.isArray(records) ? records : []).map((rec) => {
-                  const style = badgeColors[rec.record_type] || badgeColors.OTHER
+                  const style = badgeColors[rec.record_type] || badgeColors.OTHER;
                   const period = rec.period_month && rec.period_year
                     ? `${new Date(2000, rec.period_month - 1, 1).toLocaleString('default', { month: 'short' })} ${rec.period_year}`
-                    : rec.period_year ? `${rec.period_year}` : '—'
+                    : rec.period_year ? `${rec.period_year}` : '—';
 
                   return (
                     <tr key={rec.id} style={{ borderBottom: '1px solid #EDF2F7', fontSize: 14, color: '#172B3A' }}>
@@ -308,7 +482,7 @@ export default function FinancePage() {
                       <td style={{ padding: '14px 18px' }}>
                         <span style={{
                           background: style.bg, color: style.color, border: `1px solid ${style.border}`,
-                          padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600
+                          padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
                         }}>
                           {rec.record_type}
                         </span>
@@ -324,7 +498,7 @@ export default function FinancePage() {
                         {new Date(rec.created_at).toLocaleDateString()}
                       </td>
                     </tr>
-                  )
+                  );
                 })}
               </tbody>
             </table>
@@ -335,7 +509,7 @@ export default function FinancePage() {
         {showModal && (
           <div style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
           }}>
             <div style={{ background: '#FFFFFF', borderRadius: 12, width: '100%', maxWidth: 500, padding: 24, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -349,11 +523,11 @@ export default function FinancePage() {
                   <select
                     required
                     value={form.person_id}
-                    onChange={e => setForm({ ...form, person_id: e.target.value })}
+                    onChange={(e) => setForm({ ...form, person_id: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14 }}
                   >
                     <option value="">Select an employee...</option>
-                    {(Array.isArray(employees) ? employees : []).map(emp => (
+                    {(Array.isArray(employees) ? employees : []).map((emp) => (
                       <option key={emp.id} value={emp.id}>
                         {emp.first_name} {emp.last_name} ({emp.email})
                       </option>
@@ -366,10 +540,10 @@ export default function FinancePage() {
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#4A5568', marginBottom: 6 }}>Record Type *</label>
                     <select
                       value={form.record_type}
-                      onChange={e => setForm({ ...form, record_type: e.target.value })}
+                      onChange={(e) => setForm({ ...form, record_type: e.target.value })}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14 }}
                     >
-                      {RECORD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      {RECORD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                   <div>
@@ -380,7 +554,7 @@ export default function FinancePage() {
                       required
                       placeholder="50000.00"
                       value={form.amount}
-                      onChange={e => setForm({ ...form, amount: e.target.value })}
+                      onChange={(e) => setForm({ ...form, amount: e.target.value })}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }}
                     />
                   </div>
@@ -391,7 +565,7 @@ export default function FinancePage() {
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#4A5568', marginBottom: 6 }}>Month</label>
                     <select
                       value={form.period_month}
-                      onChange={e => setForm({ ...form, period_month: e.target.value })}
+                      onChange={(e) => setForm({ ...form, period_month: e.target.value })}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14 }}
                     >
                       {Array.from({ length: 12 }, (_, i) => (
@@ -406,7 +580,7 @@ export default function FinancePage() {
                     <input
                       type="number"
                       value={form.period_year}
-                      onChange={e => setForm({ ...form, period_year: e.target.value })}
+                      onChange={(e) => setForm({ ...form, period_year: e.target.value })}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }}
                     />
                   </div>
@@ -418,7 +592,7 @@ export default function FinancePage() {
                     rows={3}
                     placeholder="e.g., Monthly performance incentive or standard salary disbursement"
                     value={form.description}
-                    onChange={e => setForm({ ...form, description: e.target.value })}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E0', borderRadius: 6, fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit' }}
                   />
                 </div>
@@ -445,5 +619,5 @@ export default function FinancePage() {
         )}
       </div>
     </AppShell>
-  )
+  );
 }

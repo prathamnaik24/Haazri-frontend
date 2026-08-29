@@ -34,7 +34,8 @@ const NAV_CONFIG = {
     { path: '/app/leave',        label: 'My Leave',           Icon: LeaveIcon },
     { path: '/app/leave-approvals',label: 'Leave Approvals',  Icon: ApprovalIcon },
     { path: '/app/hr-leaves',    label: 'HR Leaves',          Icon: HRIcon },
-    { path: '/app/finance',      label: 'Finance & Payroll',  Icon: FinanceIcon },
+    { path: '/app/finance',      label: 'Finance & Payroll',  Icon: FinanceIcon, feature: 'financial_dashboard' },
+    { path: '/app/billing',      label: 'Billing & Plan',     Icon: FinanceIcon, feature: 'billing_portal' },
     { path: '/app/roles',        label: 'Roles & Permissions',Icon: RolesIcon },
     { path: '/app/reports',      label: 'Reports & Schedule', Icon: ReportsIcon },
     { path: '/app/audit-logs',   label: 'Audit Logs',         Icon: AuditIcon },
@@ -49,7 +50,20 @@ NAV_CONFIG.manager.splice(3, 0, { path: '/app/org-structure', label: 'Org Struct
 function Sidebar({ role }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const navItems = NAV_CONFIG[role] || NAV_CONFIG.employee
+  const user = getUserFromToken()
+  const userFeatures = user?.features || [
+    'basic_attendance',
+    'basic_leaves',
+    'financial_dashboard',
+    'billing_portal',
+    'subscription_management',
+  ]
+
+  const rawItems = NAV_CONFIG[role] || NAV_CONFIG.employee
+  const navItems = rawItems.filter(item => {
+    if (!item.feature || role === 'org_admin') return true
+    return userFeatures.includes(item.feature)
+  })
 
   const btnBase = {
     display: 'flex', alignItems: 'center', gap: 10,

@@ -5,6 +5,7 @@ import { Avatar, avatarColor } from '../../components/ui/Avatar.jsx'
 import { card, cardTitle, dateBadge } from '../../components/ui/styles.js'
 import { CalendarIcon } from '../../components/ui/Icons.jsx'
 import AttendanceCalendar from '../../components/dashboard/AttendanceCalendar.jsx'
+import CheckInWidget from '../../components/dashboard/CheckInWidget.jsx'
 
 const attendanceData = [
   { day: 'Mon', present: 38, absent: 4 },
@@ -55,6 +56,8 @@ export default function AdminDashboard() {
   return (
     <AppShell>
       <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {/* Check-In / Check-Out Widget */}
+        <CheckInWidget />
 
         {/* Summary stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
