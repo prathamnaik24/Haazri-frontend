@@ -69,8 +69,17 @@ export default function MyAttendance() {
   }
 
   // Check today's status
-  const todayStr = new Date().toISOString().split('T')[0]
-  const todayRecord = history.find(r => r.work_date?.split('T')[0] === todayStr)
+  const today = new Date()
+  const todayRecord = history.find(r => {
+    const checkInDate = r.check_in_time ? new Date(r.check_in_time) : null
+    const workDate = r.work_date ? new Date(r.work_date) : null
+    const targetDate = checkInDate || workDate
+    if (!targetDate) return false
+
+    return targetDate.getFullYear() === today.getFullYear() &&
+           targetDate.getMonth() === today.getMonth() &&
+           targetDate.getDate() === today.getDate()
+  })
   const isCheckedIn = !!todayRecord?.check_in_time
   const isCheckedOut = !!todayRecord?.check_out_time
 
