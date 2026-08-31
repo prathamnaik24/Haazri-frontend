@@ -40,7 +40,8 @@ export default function AdminEmployees() {
           role: emp.role || 'Employee',
           role_id: emp.role_id || '',
           status: emp.is_active ? 'Active' : 'Inactive',
-          employee_id: emp.employee_id || '—'
+          employee_id: emp.employee_id || '—',
+          workday_id: emp.workday_id || '—'
         }))
         setEmployees(formatted)
         setPositionsList(posRes.data || [])
@@ -86,7 +87,9 @@ export default function AdminEmployees() {
     e.preventDefault()
     setUpdating(true)
     try {
-      await api.patch(`/org/employees/${editModal.employee.id}`, editForm)
+      const payload = { ...editForm }
+      delete payload.workday_id
+      await api.patch(`/org/employees/${editModal.employee.id}`, payload)
       setEditModal({ show: false, employee: null })
       setInviteSuccess('Employee updated successfully!')
       setTimeout(() => setInviteSuccess(''), 4000)
@@ -105,7 +108,9 @@ export default function AdminEmployees() {
     setInviting(true)
     setInviteError('')
     try {
-      const res = await api.post('/org/employees', form)
+      const payload = { ...form }
+      delete payload.workday_id
+      const res = await api.post('/org/employees', payload)
       const inviteData = res.data?.data?.invite || {}
       setInviteResult({
         email: form.email,
@@ -185,7 +190,7 @@ export default function AdminEmployees() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
               <thead>
                 <tr style={{ background: '#f9fafb' }}>
-                  {['Name', 'Employee ID', 'Email', 'Department', 'Position', 'Role', 'Status', 'Actions'].map(h => (
+                  {['Name', 'Employee ID', 'Workday ID', 'Email', 'Department', 'Position', 'Role', 'Status', 'Actions'].map(h => (
                     <th key={h} style={{ padding: '11px 20px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#374151', borderBottom: '1px solid #f3f4f6' }}>{h}</th>
                   ))}
                 </tr>
@@ -193,13 +198,13 @@ export default function AdminEmployees() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                    <td colSpan={9} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
                       Loading employees...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                    <td colSpan={9} style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
                       No employees found.
                     </td>
                   </tr>
@@ -218,6 +223,9 @@ export default function AdminEmployees() {
                       </td>
                       <td style={{ padding: '14px 20px' }}>
                         <span style={{ fontSize: 12, background: '#EBF4FF', color: '#1677B8', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{emp.employee_id}</span>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{ fontSize: 12, background: '#F1F5F9', color: '#475569', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{emp.workday_id}</span>
                       </td>
                       <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.email}</td>
                       <td style={{ padding: '14px 20px', fontSize: 13, color: '#6b7280', whiteSpace: 'nowrap' }}>{emp.dept}</td>
@@ -425,6 +433,12 @@ export default function AdminEmployees() {
                     <input value={editForm.employee_id} onChange={e => setEditForm(f => ({ ...f, employee_id: e.target.value }))}
                       placeholder="e.g. EMP-001" style={{ ...formInput, fontFamily: 'monospace' }} required />
                   </div>
+                  <div>
+                    <label style={formLabel}>Workday ID</label>
+                    <div style={{ ...formInput, background: '#f9fafb', color: '#475569', cursor: 'not-allowed', fontFamily: 'monospace', display: 'flex', alignItems: 'center' }}>
+                      {editModal.employee?.workday_id || '—'}
+                    </div>
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div>
                       <label style={formLabel}>Assigned Position</label>
@@ -506,6 +520,10 @@ export default function AdminEmployees() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
                   <span style={{ color: '#6b7280', fontSize: 13 }}>Employee ID</span>
                   <span style={{ color: '#172B3A', fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{viewModal.employee.employee_id}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
+                  <span style={{ color: '#6b7280', fontSize: 13 }}>Workday ID</span>
+                  <span style={{ color: '#475569', fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{viewModal.employee.workday_id || '—'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
                   <span style={{ color: '#6b7280', fontSize: 13 }}>Email</span>
