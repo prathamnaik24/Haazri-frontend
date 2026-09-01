@@ -30,6 +30,11 @@ import BillingPortal from '../pages/admin/BillingPortal'
 import FinancePage from '../pages/finance/FinancePage'
 import HRLeaves from '../pages/hr/HRLeaves'
 
+// Resignation pages
+import MyResignation from '../pages/employee/MyResignation'
+import ManagerResignations from '../pages/manager/ManagerResignations'
+import HRResignations from '../pages/hr/HRResignations'
+
 // Shared pages
 import Profile from '../pages/Profile'
 import AcceptInvite from '../pages/auth/AcceptInvite'
@@ -71,10 +76,12 @@ export const router = createBrowserRouter([
   { path: '/app/dashboard',       element: <DashboardRouter /> },
   { path: '/app/attendance',      element: <MyAttendance /> },
   { path: '/app/leave',           element: <MyLeave /> },
+  { path: '/app/resignation',     element: <MyResignation /> },
 
   // Manager
-  { path: '/app/team-attendance', element: <TeamAttendance /> },
-  { path: '/app/leave-approvals', element: <LeaveApprovals /> },
+  { path: '/app/team-attendance',     element: <TeamAttendance /> },
+  { path: '/app/leave-approvals',     element: <LeaveApprovals /> },
+  { path: '/app/manager-resignation', element: <ManagerResignations /> },
 
   // Admin & Manager extended
   { path: '/app/employees',       element: <AdminEmployees /> },
@@ -83,6 +90,7 @@ export const router = createBrowserRouter([
   { path: '/app/reports',         element: <Reports /> },
   { path: '/app/audit-logs',      element: <AuditLogs /> },
   { path: '/app/hr-leaves',       element: <HRLeaves /> },
+  { path: '/app/hr-resignation',  element: <HRResignations /> },
   { path: '/app/finance',         element: <FinancePage /> },
   { path: '/app/billing',         element: <BillingPortal /> },
   { path: '/billing',             element: <BillingPortal /> },
@@ -104,6 +112,9 @@ export const router = createBrowserRouter([
   { path: '/ui/team-attendance',  element: <TeamAttendance /> },
   { path: '/ui/my-attendance',    element: <MyAttendance /> },
   { path: '/ui/my-leave',         element: <MyLeave /> },
+  { path: '/ui/resignation',      element: <MyResignation /> },
+  { path: '/ui/manager-resignation', element: <ManagerResignations /> },
+  { path: '/ui/hr-resignation',   element: <HRResignations /> },
   { path: '/ui/finance',          element: <FinancePage /> },
   { path: '/ui/billing',          element: <BillingPortal /> },
   { path: '/ui/hr-leaves',        element: <HRLeaves /> },
