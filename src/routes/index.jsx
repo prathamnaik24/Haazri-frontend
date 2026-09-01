@@ -90,6 +90,7 @@ export const router = createBrowserRouter([
   { path: '/app/hr-leaves',       element: <HRLeaves /> },
   { path: '/app/hr-resignations',  element: <HRResignations /> },
   { path: '/app/finance',         element: <FinancePage /> },
+  { path: '/app/payroll',         element: <FinancePage /> },
   { path: '/app/billing',         element: <BillingPortal /> },
   { path: '/billing',             element: <BillingPortal /> },
 
@@ -111,6 +112,7 @@ export const router = createBrowserRouter([
   { path: '/ui/my-attendance',    element: <MyAttendance /> },
   { path: '/ui/my-leave',         element: <MyLeave /> },
   { path: '/ui/finance',          element: <FinancePage /> },
+  { path: '/ui/payroll',          element: <FinancePage /> },
   { path: '/ui/billing',          element: <BillingPortal /> },
   { path: '/ui/hr-leaves',        element: <HRLeaves /> },
   { path: '/ui/profile',          element: <Profile /> },
