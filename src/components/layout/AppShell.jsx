@@ -15,6 +15,7 @@ const NAV_CONFIG = {
     { path: '/app/leave',        label: 'My Leave',      Icon: LeaveIcon },
     { path: '/app/finance',      label: 'My Payslips',   Icon: FinanceIcon },
     { path: '/app/profile',      label: 'Profile',       Icon: ProfileIcon },
+    { path: '/app/resignation',  label: 'My Resignation', Icon: ApprovalIcon },
   ],
   manager: [
     { path: '/app/dashboard',      label: 'Dashboard',       Icon: DashboardIcon },
@@ -23,8 +24,11 @@ const NAV_CONFIG = {
     { path: '/app/team-attendance',label: 'Team Attendance', Icon: TeamIcon },
     { path: '/app/leave-approvals',label: 'Leave Approvals', Icon: ApprovalIcon },
     { path: '/app/hr-leaves',      label: 'HR Leaves',       Icon: HRIcon },
+    { path: '/app/resignation',    label: 'My Resignation',  Icon: ApprovalIcon },
     { path: '/app/finance',        label: 'My Payslips',     Icon: FinanceIcon },
     { path: '/app/profile',        label: 'Profile',         Icon: ProfileIcon },
+    { path: '/app/manager-resignations', label: 'Resignations', Icon: ApprovalIcon },
+    { path: '/app/hr-resignations', label: 'HR Resignations', Icon: HRIcon, roles: ['HR Manager', 'Org Admin'] },
   ],
   org_admin: [
     { path: '/app/dashboard',    label: 'Dashboard',          Icon: DashboardIcon },
@@ -40,6 +44,7 @@ const NAV_CONFIG = {
     { path: '/app/reports',      label: 'Reports & Schedule', Icon: ReportsIcon },
     { path: '/app/audit-logs',   label: 'Audit Logs',         Icon: AuditIcon },
     { path: '/app/profile',      label: 'Profile',            Icon: ProfileIcon },
+    { path: '/app/hr-resignations', label: 'Resignations',      Icon: HRIcon },
   ],
 }
 
@@ -65,6 +70,7 @@ function Sidebar({ role }) {
   }
 
   const navItems = rawItems.filter(item => {
+    if (item.roles && !item.roles.some(required => required === user?.type || (user?.roles || []).includes(required))) return false
     if (!item.feature || role === 'org_admin') return true
     return userFeatures.includes(item.feature)
   })
