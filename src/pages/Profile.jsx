@@ -100,6 +100,7 @@ export default function Profile() {
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
     : 'User'
+  const workdayId = profile?.workday_id || tokenUser?.workday_id || '—'
 
   return (
     <AppShell>
@@ -119,9 +120,12 @@ export default function Profile() {
                 </span>
                 {profile?.employee_id && (
                   <span style={{ fontSize: 12, background: '#F1F5F9', color: '#475569', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>
-                    ID: {profile.employee_id}
+                    Employee ID: {profile.employee_id}
                   </span>
                 )}
+                <span style={{ fontSize: 12, background: '#EEF2FF', color: '#4338CA', padding: '3px 10px', borderRadius: 20, fontWeight: 600, fontFamily: 'monospace' }}>
+                  Workday ID: {workdayId}
+                </span>
               </div>
             </div>
           </div>
