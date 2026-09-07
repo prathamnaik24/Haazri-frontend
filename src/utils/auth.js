@@ -18,6 +18,21 @@ export function getUserFromToken() {
   return decodeToken(getStoredToken())
 }
 
+export function hasPermission(permission) {
+  const user = getUserFromToken()
+  if (!user) return false
+  if (Array.isArray(user.permissions)) return user.permissions.includes(permission)
+  return user.type === 'org_admin' || (user.roles || []).some(role => role.toLowerCase() === 'org admin')
+}
+
+export function canViewHierarchy() {
+  return hasPermission('view_hierarchy') || getUserRole() !== null
+}
+
+export function canManageHierarchy() {
+  return hasPermission('manage_hierarchy') || ['manager', 'org_admin'].includes(getUserRole())
+}
+
 /**
  * Returns the canonical role string used for routing and UI gating.
  *
@@ -38,9 +53,13 @@ export function getUserRole() {
 
   if (roles.includes('org admin')) return 'org_admin'
 
-  // Supervisor / manager / HR — all get team-scoped access
-  const managerKeywords = ['manager', 'supervisor', 'hr', 'team lead', 'lead', 'head', 'director', 'chief', 'vp', 'vice president']
+  // Supervisor / manager / HR / team leads / senior positions — all get team-scoped management access
+  const managerKeywords = ['manager', 'supervisor', 'hr', 'team lead', 'lead', 'head', 'director', 'chief', 'vp', 'vice president', 'senior']
   if (roles.some(r => managerKeywords.some(kw => r.includes(kw)))) return 'manager'
+
+  if (user.is_manager || user.has_subordinates || (user.permissions && user.permissions.includes('approve_leaves'))) {
+    return 'manager'
+  }
 
   return 'employee'
 }
