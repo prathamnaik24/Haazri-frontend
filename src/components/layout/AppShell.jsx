@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import api from '../../services/api.js'
 import {
   BurraaLogo, DashboardIcon, AttendanceIcon, LeaveIcon, TeamIcon,
   ApprovalIcon, EmployeesIcon, OrgIcon, ReportsIcon, AuditIcon,
@@ -137,6 +139,29 @@ function Sidebar({ role }) {
 // ─── Header ────────────────────────────────────────────────────────────────
 function Header({ user }) {
   const navigate = useNavigate()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchUnread = async () => {
+      try {
+        const res = await api.get('/notifications/unread-count')
+        if (isMounted) {
+          setUnreadCount(res.data?.data?.unread_count || 0)
+        }
+      } catch (err) {
+        // Silently ignore if offline
+      }
+    }
+
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [])
+
   const displayName = user
     ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
     : 'User'
@@ -158,12 +183,21 @@ function Header({ user }) {
         />
       </div>
       <div style={{ flex: 1 }} />
-      <button style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+      <button
+        title="Notifications"
+        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}
+      >
         <BellIcon size={22} color="#526B7A" />
-        <span style={{
-          position: 'absolute', top: 6, right: 6, width: 8, height: 8,
-          background: '#1677B8', borderRadius: '50%', border: '2px solid #FFFFFF',
-        }} />
+        {unreadCount > 0 && (
+          <span style={{
+            position: 'absolute', top: 4, right: 4, minWidth: 16, height: 16,
+            background: '#E53E3E', borderRadius: '50%', border: '2px solid #FFFFFF',
+            color: '#FFFFFF', fontSize: 9, fontWeight: 700, display: 'flex',
+            alignItems: 'center', justifyContent: 'center', padding: '0 3px',
+          }}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
       <div
         onClick={() => navigate('/app/profile')}
