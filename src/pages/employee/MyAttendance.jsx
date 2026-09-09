@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import AppShell from '../../components/layout/AppShell.jsx'
+import AttendanceCalendar from '../../components/dashboard/AttendanceCalendar.jsx'
 import api from '../../services/api.js'
 
 export default function MyAttendance() {
@@ -190,6 +191,11 @@ export default function MyAttendance() {
             </div>
           </div>
         )}
+
+        {/* Monthly Attendance Calendar */}
+        <div style={{ marginBottom: 28 }}>
+          <AttendanceCalendar />
+        </div>
 
         {/* Filters + Table */}
         <div style={{ background: '#FFFFFF', border: '1px solid #D7E6EF', borderRadius: 12, padding: 20 }}>

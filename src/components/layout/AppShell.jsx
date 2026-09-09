@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import api from '../../services/api.js'
 import {
   BurraaLogo, DashboardIcon, AttendanceIcon, LeaveIcon, TeamIcon,
   ApprovalIcon, EmployeesIcon, OrgIcon, ReportsIcon, AuditIcon,
@@ -10,12 +12,12 @@ import { getUserFromToken, getUserRole, logout } from '../../utils/auth.js'
 // ─── Role-based nav config ─────────────────────────────────────────────────
 const NAV_CONFIG = {
   employee: [
-    { path: '/app/dashboard',    label: 'Dashboard',     Icon: DashboardIcon },
-    { path: '/app/attendance',   label: 'My Attendance', Icon: AttendanceIcon },
-    { path: '/app/leave',        label: 'My Leave',      Icon: LeaveIcon },
-    { path: '/app/finance',      label: 'My Payslips',   Icon: FinanceIcon },
-    { path: '/app/profile',      label: 'Profile',       Icon: ProfileIcon },
-    { path: '/app/resignation',  label: 'My Resignation', Icon: ApprovalIcon },
+    { path: '/app/dashboard',    label: 'Dashboard',             Icon: DashboardIcon },
+    { path: '/app/attendance',   label: 'My Attendance',         Icon: AttendanceIcon },
+    { path: '/app/leave',        label: 'My Leave',              Icon: LeaveIcon },
+    { path: '/app/finance',      label: 'My Payslips & Salary',  Icon: FinanceIcon },
+    { path: '/app/profile',      label: 'Profile',               Icon: ProfileIcon },
+    { path: '/app/resignation',  label: 'My Resignation',        Icon: ApprovalIcon },
   ],
   manager: [
     { path: '/app/dashboard',      label: 'Dashboard',             Icon: DashboardIcon },
@@ -24,11 +26,11 @@ const NAV_CONFIG = {
     { path: '/app/team-attendance',label: 'Team Attendance',       Icon: TeamIcon },
     { path: '/app/leave-approvals',label: 'Leave Approvals',       Icon: ApprovalIcon },
     { path: '/app/hr-leaves',      label: 'HR Leaves',             Icon: HRIcon },
-    { path: '/app/resignation',    label: 'My Resignation',  Icon: ApprovalIcon },
+    { path: '/app/resignation',    label: 'My Resignation',        Icon: ApprovalIcon },
     { path: '/app/finance',        label: 'My Payslips & Salary',  Icon: FinanceIcon },
     { path: '/app/profile',        label: 'Profile',               Icon: ProfileIcon },
-    { path: '/app/manager-resignations', label: 'Resignations', Icon: ApprovalIcon },
-    { path: '/app/hr-resignations', label: 'HR Resignations', Icon: HRIcon, roles: ['HR Manager', 'Org Admin'] },
+    { path: '/app/manager-resignations', label: 'Resignations',    Icon: ApprovalIcon },
+    { path: '/app/hr-resignations', label: 'HR Resignations',      Icon: HRIcon, roles: ['HR Manager', 'Org Admin'] },
   ],
   org_admin: [
     { path: '/app/dashboard',    label: 'Dashboard',              Icon: DashboardIcon },
@@ -44,7 +46,7 @@ const NAV_CONFIG = {
     { path: '/app/reports',      label: 'Reports & Schedule',     Icon: ReportsIcon },
     { path: '/app/audit-logs',   label: 'Audit Logs',             Icon: AuditIcon },
     { path: '/app/profile',      label: 'Profile',                Icon: ProfileIcon },
-    { path: '/app/hr-resignations', label: 'Resignations',      Icon: HRIcon },
+    { path: '/app/hr-resignations', label: 'Resignations',        Icon: HRIcon },
   ],
 }
 
@@ -137,6 +139,29 @@ function Sidebar({ role }) {
 // ─── Header ────────────────────────────────────────────────────────────────
 function Header({ user }) {
   const navigate = useNavigate()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchUnread = async () => {
+      try {
+        const res = await api.get('/notifications/unread-count')
+        if (isMounted) {
+          setUnreadCount(res.data?.data?.unread_count || 0)
+        }
+      } catch (err) {
+        // Silently ignore if offline
+      }
+    }
+
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [])
+
   const displayName = user
     ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
     : 'User'
@@ -158,12 +183,21 @@ function Header({ user }) {
         />
       </div>
       <div style={{ flex: 1 }} />
-      <button style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+      <button
+        title="Notifications"
+        style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}
+      >
         <BellIcon size={22} color="#526B7A" />
-        <span style={{
-          position: 'absolute', top: 6, right: 6, width: 8, height: 8,
-          background: '#1677B8', borderRadius: '50%', border: '2px solid #FFFFFF',
-        }} />
+        {unreadCount > 0 && (
+          <span style={{
+            position: 'absolute', top: 4, right: 4, minWidth: 16, height: 16,
+            background: '#E53E3E', borderRadius: '50%', border: '2px solid #FFFFFF',
+            color: '#FFFFFF', fontSize: 9, fontWeight: 700, display: 'flex',
+            alignItems: 'center', justifyContent: 'center', padding: '0 3px',
+          }}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
       <div
         onClick={() => navigate('/app/profile')}
