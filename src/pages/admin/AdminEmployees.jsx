@@ -112,10 +112,12 @@ export default function AdminEmployees() {
       delete payload.workday_id
       const res = await api.post('/org/employees', payload)
       const inviteData = res.data?.data?.invite || {}
+      const onboardingData = res.data?.data?.onboarding || {}
+      const inviteLink = inviteData.invite_link || onboardingData.activationLink || res.data?.data?.invite_link || ''
       setInviteResult({
         email: form.email,
         employee_id: form.employee_id,
-        invite_link: inviteData.invite_link
+        invite_link: inviteLink,
       })
       setShowModal(false)
       setForm({ first_name: '', last_name: '', email: '', employee_id: '', department: '', position_id: '', role_id: '' })
@@ -132,9 +134,11 @@ export default function AdminEmployees() {
     try {
       const res = await api.post(`/org/employees/${employeeId}/resend-invite`)
       const inviteData = res.data?.data?.invite || {}
+      const onboardingData = res.data?.data?.onboarding || {}
+      const inviteLink = inviteData.invite_link || onboardingData.activationLink || res.data?.data?.invite_link || ''
       setInviteResult({
         email: employees.find(e => e.id === employeeId)?.email || 'Employee',
-        invite_link: inviteData.invite_link
+        invite_link: inviteLink,
       })
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to resend invitation')
