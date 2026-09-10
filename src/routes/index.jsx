@@ -98,6 +98,7 @@ export const router = createBrowserRouter([
   { path: '/app/profile',         element: <Profile /> },
   { path: '/invite',              element: <AcceptInvite /> },
   { path: '/accept-invite',       element: <AcceptInvite /> },
+  { path: '/set-password',        element: <AcceptInvite /> },  // alias
 
   // Catch-all
   { path: '*', element: <Navigate to="/" replace /> },

@@ -47,7 +47,7 @@ export default function AcceptInvite() {
     setSubmitting(true)
     setError('')
     try {
-      const res = await api.post('/auth/invite/accept', {
+      await api.post('/auth/activate-account', {
         token,
         password: form.password,
       })
