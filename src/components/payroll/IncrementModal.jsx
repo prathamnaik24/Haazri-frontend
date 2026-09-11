@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { proposeIncrement, reviewIncrement } from '../../services/compensation';
+import { XIcon } from '../ui/Icons';
 
 export default function IncrementModal({ employee, increment, mode = 'propose', onClose, onSuccess }) {
   const [saving, setSaving] = useState(false);
@@ -69,7 +70,9 @@ export default function IncrementModal({ employee, increment, mode = 'propose', 
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0F172A' }}>
             {mode === 'propose' ? 'Propose Salary Increment' : 'Review Increment Request'}
           </h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#64748B' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}>
+            <XIcon size={18} color="#64748B" />
+          </button>
         </div>
 
         {/* Body */}

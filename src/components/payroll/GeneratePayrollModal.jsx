@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { generateMonthlyPayroll } from '../../services/payroll';
+import { XIcon } from '../ui/Icons';
 
 export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
   const [saving, setSaving] = useState(false);
@@ -8,14 +9,6 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
   const currentDate = new Date();
   const [month, setMonth] = useState(currentDate.getMonth() + 1);
   const [year, setYear] = useState(currentDate.getFullYear());
-  const [workingDays, setWorkingDays] = useState(22);
-  const [paidDays, setPaidDays] = useState(22);
-
-  // Deductions
-  const [tds, setTds] = useState('0');
-  const [providentFund, setProvidentFund] = useState('0');
-  const [professionalTax, setProfessionalTax] = useState('200');
-  const [otherDeductions, setOtherDeductions] = useState('0');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,12 +19,6 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
         person_id: employee.id,
         month: parseInt(month, 10),
         year: parseInt(year, 10),
-        working_days: parseInt(workingDays, 10),
-        paid_days: parseInt(paidDays, 10),
-        tds: parseFloat(tds || 0),
-        provident_fund: parseFloat(providentFund || 0),
-        professional_tax: parseFloat(professionalTax || 0),
-        other_deductions: parseFloat(otherDeductions || 0),
       });
       if (onSuccess) onSuccess();
       onClose();
@@ -48,7 +35,7 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
       zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
     }}>
       <div style={{
-        background: '#FFFFFF', borderRadius: 16, width: '100%', maxWidth: 560,
+        background: '#FFFFFF', borderRadius: 16, width: '100%', maxWidth: 520,
         boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', overflow: 'hidden',
       }}>
         {/* Header */}
@@ -58,13 +45,18 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
         }}>
           <div>
             <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0F172A' }}>
-              Compute & Generate Monthly Payroll
+              Generate Monthly Payroll
             </h3>
             <div style={{ fontSize: 13, color: '#64748B', marginTop: 2 }}>
-              Target: {employee?.first_name} {employee?.last_name} ({employee?.employee_id || employee?.email})
+              Employee: {employee?.first_name} {employee?.last_name} ({employee?.employee_id || employee?.email})
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#64748B' }}>✕</button>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center', padding: 4 }}
+          >
+            <XIcon size={18} color="#64748B" />
+          </button>
         </div>
 
         {/* Body */}
@@ -77,13 +69,13 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
 
           <form onSubmit={handleSubmit}>
             {/* Period Selection */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Month *</label>
                 <select
                   value={month}
                   onChange={(e) => setMonth(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 14 }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: 8, fontSize: 14, background: '#FFFFFF' }}
                 >
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
@@ -99,86 +91,25 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
                   required
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }}
                 />
-              </div>
-            </div>
-
-            {/* Attendance Days */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Total Working Days</label>
-                <input
-                  type="number"
-                  value={workingDays}
-                  onChange={(e) => setWorkingDays(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Paid Days</label>
-                <input
-                  type="number"
-                  value={paidDays}
-                  onChange={(e) => setPaidDays(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-            </div>
-
-            {/* Deductions Input Grid */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: 14, marginBottom: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 10 }}>Deductions Configuration (₹)</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Provident Fund (PF)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={providentFund}
-                    onChange={(e) => setProvidentFund(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Professional Tax (PT)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={professionalTax}
-                    onChange={(e) => setProfessionalTax(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Income Tax (TDS)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={tds}
-                    onChange={(e) => setTds(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Other Deductions</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={otherDeductions}
-                    onChange={(e) => setOtherDeductions(e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }}
-                  />
-                </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button type="button" onClick={onClose} style={{ background: '#F1F5F9', border: 'none', borderRadius: 6, padding: '10px 16px', fontSize: 14, color: '#475569', fontWeight: 600, cursor: 'pointer' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: 8, padding: '10px 18px', fontSize: 14, color: '#475569', fontWeight: 600, cursor: 'pointer' }}
+              >
                 Cancel
               </button>
-              <button type="submit" disabled={saving} style={{ background: '#4F46E5', border: 'none', borderRadius: 6, padding: '10px 20px', fontSize: 14, color: '#FFFFFF', fontWeight: 600, cursor: 'pointer' }}>
-                {saving ? 'Computing...' : 'Generate Payroll'}
+              <button
+                type="submit"
+                disabled={saving}
+                style={{ background: '#4F46E5', border: 'none', borderRadius: 8, padding: '10px 22px', fontSize: 14, color: '#FFFFFF', fontWeight: 600, cursor: 'pointer' }}
+              >
+                {saving ? 'Calculating...' : 'Generate Payroll'}
               </button>
             </div>
           </form>
@@ -187,3 +118,4 @@ export default function GeneratePayrollModal({ employee, onClose, onSuccess }) {
     </div>
   );
 }
+
