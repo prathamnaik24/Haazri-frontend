@@ -58,8 +58,23 @@ export async function getPersonPayslips(personId, year = null) {
   return response.data;
 }
 
+// Get detailed payslip breakdown (company, employee, bank/tax, earnings, deductions, net salary, words)
+export async function getPayslipDetail(payslipId) {
+  const response = await api.get(`/payroll/payslips/${payslipId}`);
+  return response.data;
+}
+
+// Download server-generated payslip PDF blob
+export async function downloadPayslipPdf(payslipId) {
+  const response = await api.get(`/payroll/payslips/${payslipId}/pdf`, {
+    responseType: 'blob',
+  });
+  return response;
+}
+
 // Create/Upload payslip PDF metadata
 export async function uploadPayslip(data) {
   const response = await api.post('/payroll/payslips', data);
   return response.data;
 }
+

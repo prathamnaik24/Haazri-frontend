@@ -16,6 +16,15 @@ import {
   getPersonPayslips,
 } from '../../services/payroll';
 import { getUserRole } from '../../utils/auth';
+import {
+  FinanceIcon,
+  TrendingUpIcon,
+  PrintIcon,
+  LedgerIcon,
+  DollarSignIcon,
+  ShieldIcon,
+  PlusIcon,
+} from '../../components/ui/Icons';
 
 // Payroll Modals
 import PayslipModal from '../../components/payroll/PayslipModal';
@@ -29,6 +38,7 @@ export default function FinancePage() {
   const navigate = useNavigate();
   const role = getUserRole();
   const isPrivileged = role === 'org_admin' || role === 'ceo' || role === 'manager';
+  const canManagePayroll = role === 'org_admin';
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState(isPrivileged ? 'payroll' : 'my_compensation');
@@ -246,7 +256,7 @@ export default function FinancePage() {
                   padding: '9px 16px', fontWeight: 600, fontSize: 13, cursor: 'pointer',
                 }}
               >
-                {generatingSnapshot ? 'Snapshotting...' : '📸 Snapshot'}
+                {generatingSnapshot ? 'Snapshotting...' : 'Snapshot'}
               </button>
 
               <button
@@ -285,10 +295,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'payroll' ? 700 : 500,
                   color: activeTab === 'payroll' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'payroll' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                📊 Payroll & Salary Management
+                <FinanceIcon size={16} color={activeTab === 'payroll' ? '#4F46E5' : '#64748B'} />
+                Payroll & Salary Management
               </button>
               <button
                 onClick={() => setActiveTab('increments')}
@@ -297,10 +308,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'increments' ? 700 : 500,
                   color: activeTab === 'increments' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'increments' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                📈 Salary Increments ({increments.filter(i => i.status === 'PENDING').length} Pending)
+                <TrendingUpIcon size={16} color={activeTab === 'increments' ? '#4F46E5' : '#64748B'} />
+                Salary Increments ({increments.filter(i => i.status === 'PENDING').length} Pending)
               </button>
               <button
                 onClick={() => setActiveTab('payslips')}
@@ -309,10 +321,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'payslips' ? 700 : 500,
                   color: activeTab === 'payslips' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'payslips' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                🖨️ Payslips Archive
+                <PrintIcon size={16} color={activeTab === 'payslips' ? '#4F46E5' : '#64748B'} />
+                Payslips Archive
               </button>
               <button
                 onClick={() => setActiveTab('ledger')}
@@ -321,10 +334,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'ledger' ? 700 : 500,
                   color: activeTab === 'ledger' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'ledger' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                🏛️ Company Ledger & Subscriptions
+                <LedgerIcon size={16} color={activeTab === 'ledger' ? '#4F46E5' : '#64748B'} />
+                Company Ledger & Subscriptions
               </button>
             </>
           ) : (
@@ -336,10 +350,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'my_compensation' ? 700 : 500,
                   color: activeTab === 'my_compensation' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'my_compensation' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                💼 My Salary Structure
+                <FinanceIcon size={16} color={activeTab === 'my_compensation' ? '#4F46E5' : '#64748B'} />
+                My Salary Structure
               </button>
               <button
                 onClick={() => setActiveTab('payroll')}
@@ -348,10 +363,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'payroll' ? 700 : 500,
                   color: activeTab === 'payroll' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'payroll' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                💵 My Payroll History
+                <DollarSignIcon size={16} color={activeTab === 'payroll' ? '#4F46E5' : '#64748B'} />
+                My Payroll History
               </button>
               <button
                 onClick={() => setActiveTab('increments')}
@@ -360,10 +376,11 @@ export default function FinancePage() {
                   fontSize: 14, fontWeight: activeTab === 'increments' ? 700 : 500,
                   color: activeTab === 'increments' ? '#4F46E5' : '#64748B',
                   borderBottom: activeTab === 'increments' ? '3px solid #4F46E5' : '3px solid transparent',
-                  marginBottom: -2,
+                  marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                📈 My Increments
+                <TrendingUpIcon size={16} color={activeTab === 'increments' ? '#4F46E5' : '#64748B'} />
+                My Increments
               </button>
             </>
           )}
@@ -384,9 +401,9 @@ export default function FinancePage() {
               }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: 12, background: '#EEF2FF', color: '#4F46E5',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  $
+                  <DollarSignIcon size={22} color="#4F46E5" />
                 </div>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Total Monthly Payroll</div>
@@ -403,9 +420,9 @@ export default function FinancePage() {
               }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: 12, background: '#ECFDF5', color: '#059669',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  📈
+                  <TrendingUpIcon size={22} color="#059669" />
                 </div>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Total Net Payouts</div>
@@ -422,9 +439,9 @@ export default function FinancePage() {
               }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: 12, background: '#E0F2FE', color: '#0284C7',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  🛡️
+                  <ShieldIcon size={22} color="#0284C7" />
                 </div>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Active Salaried Staff</div>
@@ -555,25 +572,29 @@ export default function FinancePage() {
 
                             <td style={{ padding: '14px 16px', textAlign: 'right' }}>
                               <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                                <button
-                                  onClick={() => setSelectedEmpComp(emp)}
-                                  style={{
-                                    background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A',
-                                    padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                                  }}
-                                >
-                                  Edit Wage
-                                </button>
+                                {canManagePayroll && (
+                                  <button
+                                    onClick={() => setSelectedEmpComp(emp)}
+                                    style={{
+                                      background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A',
+                                      padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                    }}
+                                  >
+                                    Edit Wage
+                                  </button>
+                                )}
 
-                                <button
-                                  onClick={() => setSelectedEmpPayrollGen(emp)}
-                                  style={{
-                                    background: '#EEF2FF', border: '1px solid #C7D2FE', color: '#4F46E5',
-                                    padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                                  }}
-                                >
-                                  Generate
-                                </button>
+                                {canManagePayroll && (
+                                  <button
+                                    onClick={() => setSelectedEmpPayrollGen(emp)}
+                                    style={{
+                                      background: '#EEF2FF', border: '1px solid #C7D2FE', color: '#4F46E5',
+                                      padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                    }}
+                                  >
+                                    Generate
+                                  </button>
+                                )}
 
                                 {pr.id && (
                                   <button
@@ -587,7 +608,7 @@ export default function FinancePage() {
                                   </button>
                                 )}
 
-                                {pr.id && pr.status !== 'Paid' && (
+                                {canManagePayroll && pr.id && pr.status !== 'Paid' && (
                                   <button
                                     onClick={() => handleUpdatePayrollStatusAction(pr.id, 'Paid')}
                                     style={{
@@ -679,9 +700,10 @@ export default function FinancePage() {
                   style={{
                     background: '#4F46E5', color: '#FFFFFF', border: 'none', borderRadius: 8,
                     padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
-                  + Propose Increment
+                  <PlusIcon size={16} color="#FFFFFF" /> Propose Increment
                 </button>
               )}
             </div>
@@ -900,8 +922,8 @@ export default function FinancePage() {
             {/* Snapshots Table */}
             {snapshots.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, marginBottom: 24 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 14px 0' }}>
-                  📈 Periodic Expenditure Snapshots
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <TrendingUpIcon size={18} color="#2563EB" /> Periodic Expenditure Snapshots
                 </h3>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                   <thead>

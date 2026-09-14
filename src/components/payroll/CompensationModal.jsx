@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XIcon } from '../ui/Icons';
 import {
   getEmployeeCompensation,
   upsertSalaryStructure,
@@ -156,7 +157,9 @@ export default function CompensationModal({ employee, onClose, onSaveSuccess }) 
               {employee.first_name} {employee.last_name} ({employee.employee_id || employee.email})
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#64748B' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}>
+            <XIcon size={18} color="#64748B" />
+          </button>
         </div>
 
         {/* Body */}
